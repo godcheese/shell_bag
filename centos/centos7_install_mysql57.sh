@@ -25,8 +25,8 @@ function install_mysql57() {
     install_version=mysql57
     install_path=${mysql_path}/mysql57
     download_version=mysql-5.7.28-el7-x86_64
-    download_url=https://downloads.mysql.com/archives/get/p/23/file/${download_version}.tar.gz
-#    download_url=http://mirrors.ustc.edu.cn/mysql-ftp/Downloads/MySQL-5.7/${download_version}.tar.gz
+#    download_url=https://downloads.mysql.com/archives/get/p/23/file/${download_version}.tar.gz
+    download_url=http://mirrors.ustc.edu.cn/mysql-ftp/Downloads/MySQL-5.7/${download_version}.tar.gz
     cd ${temp_path}
     wget -O ${download_version}.tar.gz ${download_url}
     tar -zxvf ${download_version}.tar.gz
