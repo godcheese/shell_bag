@@ -6,11 +6,6 @@
 webwork_path=/webwork
 temp_path=/tmp
 
-function initialize() {
-    yum update -y
-    yum install -y wget
-}
-
 function install_maven3() {
     if [ $USER != "root" ]; then
         echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
@@ -60,5 +55,4 @@ function install_maven3() {
 
 }
 
-initialize
 install_maven3
