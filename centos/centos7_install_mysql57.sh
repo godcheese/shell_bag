@@ -12,20 +12,26 @@ function initialize() {
 }
 
 function install_mysql57() {
+    if [ $USER != "root" ]; then
+        echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
+        exit
+    fi
+
     echo -e "\033[32m
     -------------------------------------------------
     | CentOS 7 Auto Install MySQL 5.7               |
     | http://github.com/godcheese/shell_bag         |
     -------------------------------------------------
-\033[0m"
+    \033[0m"
+
     mysql_password=123456
     mysql_port=3306
     mysql_path=${webwork_path}/mysql
     install_version=mysql57
     install_path=${mysql_path}/mysql57
-    download_version=mysql-5.7.29-el7-x86_64
+    download_version=mysql-5.7.28-el7-x86_64
     download_url=https://downloads.mysql.com/archives/get/p/23/file/${download_version}.tar.gz
-#   download_url=http://mirrors.ustc.edu.cn/mysql-ftp/Downloads/MySQL-5.7/${download_version}.tar.gz
+#    download_url=http://mirrors.ustc.edu.cn/mysql-ftp/Downloads/MySQL-5.7/${download_version}.tar.gz
     cd ${temp_path}
     wget -O ${download_version}.tar.gz ${download_url}
     tar -zxvf ${download_version}.tar.gz
@@ -75,14 +81,25 @@ EOF
     ${install_path}/bin/mysqld --initialize-insecure --user=mysql
     service mysql restart
     ${install_path}/bin/mysqladmin -u root password "${mysql_password}"
+     mysql --version
+    if [ ! $? -eq 0 ]; then
+	    echo -e "\033[31m
+	    MySQL 安装失败！
+	    \033[0m"
+	    exit
+    else
+        echo -e "\033[32m
+        MySQL 安装成功！
+        \033[0m"
+        echo -e "\033[32m
+        - MySQL 安装路径：${install_path}
+        - MySQL Data 路径：${mysql_path}/data/${install_version}
+        - MySQL 端口：${mysql_port}
+        - root 密码：${mysql_password}
+        \033[0m"
+        exit
+    fi
 
-    echo -e "\033[32m
-    MySQL 安装成功！
-    - MySQL 安装路径：${install_path}
-    - MySQL Data 路径：${mysql_path}/data/${install_version}
-    - MySQL 端口：${mysql_port}
-    - root 密码：${mysql_password}
-\033[0m"
 }
 
 initialize
