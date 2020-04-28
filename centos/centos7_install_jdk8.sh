@@ -7,7 +7,7 @@ webwork_path=/webwork
 temp_path=/tmp
 
 function install_jdk8() {
-    if [ $USER != "root" ]; then
+    if [[ ${USER}x != "root"x ]]; then
         echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
         exit
     fi
@@ -41,7 +41,7 @@ function install_jdk8() {
     tail -4 /etc/profile
     source /etc/profile
     java -version
-    if [ ! $? -eq 0 ]; then
+    if [[ ! $? -eq 0 ]]; then
 	    echo -e "\033[31m
         Jdk 安装失败！
         \033[0m"

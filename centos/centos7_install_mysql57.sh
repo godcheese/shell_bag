@@ -7,7 +7,7 @@ webwork_path=/webwork
 temp_path=/tmp
 
 function install_mysql57() {
-    if [ $USER != "root" ]; then
+    if [[ ${USER}x != "root"x ]]; then
         echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
         exit
     fi
