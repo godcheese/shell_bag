@@ -7,7 +7,8 @@ webwork_path=/webwork
 temp_path=/tmp
 
 function install_maven3() {
-    if [[ whoami != "root" ]]; then
+user=$(env | grep USER | cut -d "=" -f 2)
+    if [[ ${user} != "root" ]]; then
         echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
         exit
     fi
