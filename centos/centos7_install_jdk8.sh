@@ -7,9 +7,9 @@ webwork_path=/webwork
 temp_path=/tmp
 
 function install_jdk8() {
-user=$(env | grep USER | cut -d "=" -f 2)
-echo ${user}
-    if [[ ${user} != "root" && ${user} != "whoami" ]]; then
+echo ${UID}
+echo ${USER}
+    if [[ ${USER} != "root" && ${USER} != "whoami" ]]; then
         echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
         exit
     fi
