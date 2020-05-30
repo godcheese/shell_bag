@@ -6,6 +6,7 @@
 webwork_path=/webwork
 temp_path=/tmp
 
+echo whoami
 function install_jdk8() {
     if [[ whoami != "root" ]]; then
         echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
