@@ -7,9 +7,8 @@ webwork_path=/webwork
 temp_path=/tmp
 
 function install_mysql57() {
-user=$(env | grep USER | cut -d "=" -f 2)
-    if [[ ${user} != "root" ]]; then
-        echo -e "\033[31m 这个脚本必须用root执行！ \033[0m"
+    if [[ ${UID} != 0 ]]; then
+        echo -e "\033[31m 这个脚本必须用 root 执行！ \033[0m"
         exit
     fi
 
@@ -78,7 +77,7 @@ EOF
     service mysql restart
     ${install_path}/bin/mysqladmin -u root password "${mysql_password}"
      mysql --version
-    if [ ! $? -eq 0 ]; then
+    if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
 	    MySQL 安装失败！
 	    \033[0m"
