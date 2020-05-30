@@ -6,7 +6,6 @@
 webwork_path=/webwork
 temp_path=/tmp
 
-echo whoami
 function install_jdk8() {
 user=$(env | grep USER | cut -d "=" -f 2)
 echo ${user}
