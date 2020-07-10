@@ -4,6 +4,7 @@
 # author: godcheese [godcheese@outlook.com]
 
 webwork_path=/webwork
+webserver_path=/webserver
 temp_path=/tmp
 
 function install_mysql57() {
@@ -21,15 +22,15 @@ function install_mysql57() {
 
     mysql_password=123456
     mysql_port=3306
-    mysql_path=${webwork_path}/mysql
-    install_version=mysql57
-    install_path=${mysql_path}/mysql57
     download_version=mysql-5.7.28-el7-x86_64
-#    download_url=https://downloads.mysql.com/archives/get/p/23/file/${download_version}.tar.gz
     download_url=http://mirrors.ustc.edu.cn/mysql-ftp/Downloads/MySQL-5.7/${download_version}.tar.gz
-    cd ${temp_path}
-    wget -O ${download_version}.tar.gz ${download_url}
-    tar -zxvf ${download_version}.tar.gz
+    # download_url=https://downloads.mysql.com/archives/get/p/23/file/${download_version}.tar.gz
+    mysql_path=${webwork_path}${webserver_path}/mysql
+    install_version=mysql57
+    install_path=${mysql_path}/${install_version}
+#    cd ${temp_path}
+    curl -o ${install_path}.tar.gz ${download_url}
+    tar -zxvf ${install_path}.tar.gz
     mkdir -p ${mysql_path}/data/${install_version}
     mkdir -p ${mysql_path}/log
     mkdir -p ${install_path}

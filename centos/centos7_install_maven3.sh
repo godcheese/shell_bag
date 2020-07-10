@@ -4,6 +4,7 @@
 # author: godcheese [godcheese@outlook.com]
 
 webwork_path=/webwork
+webserver_path=/webserver
 temp_path=/tmp
 
 function install_maven3() {
@@ -19,14 +20,13 @@ function install_maven3() {
     -------------------------------------------------
     \033[0m"
 
-    maven_path=${webwork_path}/maven
+    download_version=apache-maven-3.6.3-bin
+    download_url=https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/${download_version}.tar.gz
+    maven_path=${webwork_path}${webserver_path}/maven
     install_version=maven3
     install_path=${maven_path}/${install_version}
-    download_version=apache-maven-3.6.3
-    download_url=https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/${download_version}-bin.tar.gz
-    cd ${temp_path}
-    wget -O ${download_version}.tar.gz ${download_url}
-    tar -zxvf ${download_version}.tar.gz
+    curl -o ${install_path}.tar.gz ${download_url}
+    tar -zxvf ${install_path}.tar.gz
     mkdir -p ${install_path}
     mv -f ${download_version}/* ${install_path}
     ln -s ${install_path}/bin/mvn /usr/bin/mvn
