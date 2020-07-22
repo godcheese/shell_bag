@@ -8,14 +8,11 @@ webserver_path=/webserver
 temp_path=/tmp
 
 function install_nginx() {
-#    if [[ ${UID} != 0 ]]; then
-#        echo -e "\033[31m 这个脚本必须用 root 执行！ \033[0m"
-#        exit
-#    fi
     echo -e "\033[32m
     -------------------------------------------------
     | macOS 10.15 Auto Install Nginx                |
     | http://github.com/godcheese/shell_bag         |
+    | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
     \033[0m"
 
@@ -34,9 +31,12 @@ function install_nginx() {
     bin_path=`pwd`/bin
     conf_path=${bin_path}/conf/nginx.conf
     logs_path=${bin_path}/logs
-    ./configure --prefix=${bin_path} --sbin-path=nginx --conf-path=${conf_path} --pid-path=${logs_path}/nginx.pid
+    configure --prefix=${bin_path} --sbin-path=nginx --conf-path=${conf_path} --pid-path=${logs_path}/nginx.pid
     make && make install
-
+    cd ${bin_path}
+    nginx -v
+    echo $?
+    version=$?
     if [[ ! $? -eq 0 ]]; then
         echo -e "\033[31m
         Nginx 安装失败！
@@ -47,6 +47,7 @@ function install_nginx() {
         Nginx 安装成功！
         \033[0m"
         echo -e "\033[32m
+        - Nginx 版本：${version}
         - Nginx 安装路径：${install_path}
         - Nginx bin 路径：${bin_path}
         - Nginx 配置文件路径：${conf_path}

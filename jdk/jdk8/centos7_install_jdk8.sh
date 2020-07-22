@@ -17,6 +17,7 @@ function install_jdk8() {
     -------------------------------------------------
     | CentOS 7 Auto Install Jdk 8                   |
     | http://github.com/godcheese/shell_bag         |
+    | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
     \033[0m"
 
@@ -25,7 +26,6 @@ function install_jdk8() {
     jdk_path=${webwork_path}${webserver_path}/jdk
     install_version=jdk8
     install_path=${jdk_path}/${install_version}
-#    cd ${temp_path}
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz
     mkdir -p ${install_path}
@@ -42,6 +42,7 @@ function install_jdk8() {
     tail -4 /etc/profile
     source /etc/profile
     java -version
+    version=$1
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Jdk 安装失败！
@@ -52,11 +53,11 @@ function install_jdk8() {
         Jdk 安装成功！
         \033[0m"
         echo -e "\033[32m
+        - Jdk 版本：${version}
         - Jdk 安装路径：${install_path}
         \033[0m"
         exit
     fi
-
 }
 
 install_jdk8

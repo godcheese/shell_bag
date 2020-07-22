@@ -1,5 +1,5 @@
 # shell_bag
-   Linux Shell 工具包
+   Linux/Unix Shell 工具包
    
    ## CentOS 安装命令如下：
    ```

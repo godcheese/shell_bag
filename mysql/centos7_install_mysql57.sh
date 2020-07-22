@@ -17,6 +17,7 @@ function install_mysql57() {
     -------------------------------------------------
     | CentOS 7 Auto Install MySQL 5.7               |
     | http://github.com/godcheese/shell_bag         |
+    | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
     \033[0m"
 
@@ -78,6 +79,7 @@ EOF
     service mysql restart
     ${install_path}/bin/mysqladmin -u root password "${mysql_password}"
      mysql --version
+     version=$1
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
 	    MySQL 安装失败！
@@ -88,6 +90,7 @@ EOF
         MySQL 安装成功！
         \033[0m"
         echo -e "\033[32m
+        - MySQL 版本：${version}
         - MySQL 安装路径：${install_path}
         - MySQL Data 路径：${mysql_path}/data/${install_version}
         - MySQL 端口：${mysql_port}
@@ -95,7 +98,6 @@ EOF
         \033[0m"
         exit
     fi
-
 }
 
 install_mysql57

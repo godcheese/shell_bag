@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-echo "author godcheese"
-
+echo "author godcheese [godcheese@outlook.com]"
 echo "Add file..."
 git add -A
 echo -n "Submit remark...Please input anything(Initial commit):"

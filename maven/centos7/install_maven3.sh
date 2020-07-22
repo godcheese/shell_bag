@@ -17,6 +17,7 @@ function install_maven3() {
     -------------------------------------------------
     | CentOS 7 Auto Install Maven 3                 |
     | http://github.com/godcheese/shell_bag         |
+    | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
     \033[0m"
 
@@ -38,6 +39,7 @@ function install_maven3() {
     tail -4 /etc/profile
     source /etc/profile
     mvn --version
+    version=$1
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
 	    Maven 安装失败！
@@ -48,11 +50,11 @@ function install_maven3() {
         Maven 安装成功！
         \033[0m"
         echo -e "\033[32m
+        - Maven 版本：${version}
         - Maven 安装路径：${install_path}
         \033[0m"
         exit
     fi
-
 }
 
 install_maven3
