@@ -18,4 +18,4 @@
 | mysql | centos7_install_mysql57.sh | >= CentOS 7.0 | MySQL | 5.7.31 | https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.31-el7-x86_64.tar.gz | CentOS 安装 MySQL |
 | | macos1014_install_mysql5731.sh | >= macOS 10.14 | MySQL | 5.7.31 | https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.31-macos10.14-x86_64.tar.gz | macOS 安装 MySQL |
 | | windows_install_mysql5731.sh | >= Windows XP | MySQL | 5.7.31 | https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.31-macos10.14-x86_64.tar.gz | Windows 安装 MySQL |
-| centos7_install_1180.sh | CentOS >= 7.0 | >= CentOS 7.0 | 1.18.0 | http://nginx.org/download/nginx-1.18.0.tar.gz | macOS 安装 JDK |
+| | centos7_install_1180.sh | CentOS >= 7.0 | >= CentOS 7.0 | 1.18.0 | http://nginx.org/download/nginx-1.18.0.tar.gz | macOS 安装 JDK |
