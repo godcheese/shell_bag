@@ -3,7 +3,7 @@
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
 
-current_path=${pwd}
+current_path=`pwd`
 webwork_path=/webwork
 webserver_path=${webwork_path}/webserver
 temp_path=/tmp
