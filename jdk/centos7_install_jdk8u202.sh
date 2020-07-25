@@ -26,6 +26,8 @@ function install_jdk() {
     sudo curl -o ${download_version}.tar.gz ${download_url}
     tar -xvf ${download_version}.tar.gz
     mv -f ${download_version}/* ${install_path}
+    rm -rf ${download_version}
+    rm -rf ${download_version}.tar.gz
     ln -sf ${install_path}/bin/java /usr/bin/java
     ln -sf ${install_path}/bin/javac /usr/bin/javac
     ln -sf ${install_path}/bin/jar /usr/bin/jar
