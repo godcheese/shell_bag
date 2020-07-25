@@ -21,6 +21,7 @@ function install_jdk() {
     download_url=https://repo.huaweicloud.com/java/jdk/8u202-b08/jdk-8u202-linux-x64.tar.gz
     install_path=${webwork_path}${webserver_path}/jdk/jdk8
     cd ${temp_path}
+    mkdir -p ${install_path}
     sudo curl -o ${download_version}.tar.gz ${download_url}
     tar -xvf ${download_version}.tar.gz
     mv -f ${download_version}/${download_version}/* ${install_path}
