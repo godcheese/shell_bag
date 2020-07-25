@@ -22,9 +22,10 @@ function install_jdk() {
     jdk_path=${webwork_path}${webserver_path}/jdk
     install_version=jdk8
     install_path=${jdk_path}/${install_version}
-    sudo mkdir -p ${jdk_path}
+    sudo mkdir -p ${install_path}
     sudo curl -o ${temp_path}/${install_version}.tar.gz ${download_url}
-    tar -xvf ${temp_path}/${install_version}.tar.gz ${jdk_path}/${install_version}
+    tar -xvf ${temp_path}/${install_version}.tar.gz
+    mv -f ${temp_path}/${install_version}/* ${install_path}
     ln -sf ${install_path}/bin/java /usr/bin/java
     ln -sf ${install_path}/bin/javac /usr/bin/javac
     ln -sf ${install_path}/bin/jar /usr/bin/jar
