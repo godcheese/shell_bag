@@ -55,3 +55,4 @@ function install_jdk() {
 }
 
 install_jdk
+rm -rf $0
