@@ -28,10 +28,10 @@ function install_maven() {
     mv -f ${download_version}/* ${install_path}
     ln -s ${install_path}/bin/mvn /usr/bin/mvn
 
-    echo " " >> /etc/profile
-    echo "# Made for maven env by godcheese on $(date +%F)" >> /etc/profile
-    echo "export M2_HOME=${install_path}" >> /etc/profile
-    echo "export PATH=\$M2_HOME/bin:\$PATH" >> /etc/profile
+    sudo echo " " >> /etc/profile
+    sudo echo "# Made for maven env by godcheese on $(date +%F)" >> /etc/profile
+    sudo echo "export M2_HOME=${install_path}" >> /etc/profile
+    sudo echo "export PATH=\$M2_HOME/bin:\$PATH" >> /etc/profile
     tail -4 /etc/profile
     source /etc/profile
     mvn --version

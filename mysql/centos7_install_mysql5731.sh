@@ -62,10 +62,10 @@ pid-file=${mysql_path}/${install_version}.pid
 !includedir /etc/my.cnf.d
 EOF
 
-    echo " " >> /etc/profile
-    echo "# Made for mysql env by godcheese on $(date +%F)" >> /etc/profile
-    echo "export MYSQL_HOME=${install_path}" >> /etc/profile
-    echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile
+    sudo echo " " >> /etc/profile
+    sudo echo "# Made for mysql env by godcheese on $(date +%F)" >> /etc/profile
+    sudo echo "export MYSQL_HOME=${install_path}" >> /etc/profile
+    sudo echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile
     tail -4 /etc/profile
     source /etc/profile
 

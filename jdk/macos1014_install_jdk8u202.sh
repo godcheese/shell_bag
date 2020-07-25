@@ -30,11 +30,11 @@ function install_jdk() {
     ln -s ${install_path}/bin/javac /usr/bin/javac
     ln -s ${install_path}/bin/jar /usr/bin/jar
 
-    echo " " >> /etc/profile
-    echo "# Made for jdk env by godcheese on $(date +%F)" >> /etc/profile
-    echo "export JAVA_HOME=${install_path}" >> /etc/profile
-    echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
-    echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
+    sudo echo " " >> /etc/profile
+    sudo echo "# Made for jdk env by godcheese on $(date +%F)" >> /etc/profile
+    sudo echo "export JAVA_HOME=${install_path}" >> /etc/profile
+    sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
+    sudo echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
     tail -4 /etc/profile
     source /etc/profile
     java -version

@@ -14,8 +14,6 @@ function install_nginx() {
     nginx_path=${webwork_path}${webserver_path}/nginx
     install_version=${download_version}
     install_path=${nginx_path}/${download_version}
-    echo ${install_path}.tar.gz
-    echo ${download_url}
     mkdir -p ${nginx_path}
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz -C ${nginx_path}
