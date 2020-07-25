@@ -17,8 +17,8 @@ function install_maven() {
     -------------------------------------------------
     \033[0m"
 
-    download_version=apache-maven-3.6.3-bin
-    download_url=https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/${download_version}.tar.gz
+    download_version=apache-maven-3.6.3
+    download_url=https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/${download_version}-bin.tar.gz
     maven_path=${webwork_path}${webserver_path}/maven
     install_version=maven3
     install_path=${maven_path}/${install_version}
