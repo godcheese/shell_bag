@@ -38,11 +38,11 @@ function install_mysql() {
     ln -s ${install_path}/bin/myisamchk /usr/bin/myisamchk
     ln -s ${install_path}/bin/mysqld_safe /usr/bin/mysqld_safe
 
-    rm -rf ${mysql_path}/${install_version}.lock && touch ${mysql_path}/${install_version}.sock
-    rm -rf ${mysql_path}/${install_version}.pid && touch ${mysql_path}/${install_version}.pid
-    rm -rf ${mysql_path}/log/${install_version}-error.log && touch ${mysql_path}/log/${install_version}-error.log
+    rm -rf ${mysql_path}/${install_version}.lock && sudo touch ${mysql_path}/${install_version}.sock
+    rm -rf ${mysql_path}/${install_version}.pid && sudo touch ${mysql_path}/${install_version}.pid
+    rm -rf ${mysql_path}/log/${install_version}-error.log && sudo touch ${mysql_path}/log/${install_version}-error.log
 
-    rm -rf /etc/my.cnf && touch /etc/my.cnf
+    rm -rf /etc/my.cnf && sudo touch /etc/my.cnf
 
     cat > /etc/my.cnf << EOF
 [client]
