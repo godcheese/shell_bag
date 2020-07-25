@@ -3,6 +3,7 @@
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
 
+current_path=${pwd}
 webwork_path=/webwork
 webserver_path=${webwork_path}/webserver
 temp_path=/tmp
@@ -55,4 +56,4 @@ function install_jdk() {
 }
 
 install_jdk
-rm -rf $0
+cd ${current_path} && rm -rf $0
