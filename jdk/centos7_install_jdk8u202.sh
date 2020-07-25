@@ -23,8 +23,9 @@ function install_jdk() {
     install_version=jdk8
     install_path=${jdk_path}/${install_version}
     sudo mkdir -p ${install_path}
+    sudo mkdir -p ${temp_path}/${install_version}
     sudo curl -o ${temp_path}/${install_version}.tar.gz ${download_url}
-    tar -xvf ${temp_path}/${install_version}.tar.gz
+    tar -xvf ${temp_path}/${install_version}.tar.gz -C /${temp_path}/${install_version}
     mv -f ${temp_path}/${install_version}/* ${install_path}
     ln -sf ${install_path}/bin/java /usr/bin/java
     ln -sf ${install_path}/bin/javac /usr/bin/javac
