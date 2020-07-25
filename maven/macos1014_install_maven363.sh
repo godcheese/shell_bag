@@ -26,7 +26,7 @@ function install_maven() {
     tar -zxvf ${install_path}.tar.gz
     sudo mkdir -p ${install_path}
     mv -f ${download_version}/* ${install_path}
-    ln -s ${install_path}/bin/mvn /usr/bin/mvn
+    ln -s -f ${install_path}/bin/mvn /usr/bin/mvn
 
     sudo echo " " >> /etc/profile
     sudo echo "# Made for maven env by godcheese on $(date +%F)" >> /etc/profile

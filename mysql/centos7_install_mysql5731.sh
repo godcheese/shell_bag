@@ -34,10 +34,10 @@ function install_mysql() {
     cp -f ${install_path}/support-files/mysql.server /etc/init.d/mysql
     chkconfig --add mysql
     chkconfig mysql on
-    ln -s ${install_path}/bin/mysql /usr/bin/mysql
-    ln -s ${install_path}/bin/mysqldump /usr/bin/mysqldump
-    ln -s ${install_path}/bin/myisamchk /usr/bin/myisamchk
-    ln -s ${install_path}/bin/mysqld_safe /usr/bin/mysqld_safe
+    ln -s -f ${install_path}/bin/mysql /usr/bin/mysql
+    ln -s -f ${install_path}/bin/mysqldump /usr/bin/mysqldump
+    ln -s -f ${install_path}/bin/myisamchk /usr/bin/myisamchk
+    ln -s -f ${install_path}/bin/mysqld_safe /usr/bin/mysqld_safe
 
     rm -rf ${mysql_path}/${install_version}.lock && sudo touch ${mysql_path}/${install_version}.sock
     rm -rf ${mysql_path}/${install_version}.pid && sudo touch ${mysql_path}/${install_version}.pid

@@ -26,9 +26,9 @@ function install_jdk() {
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz
     mv -f ${download_version}/* ${install_path}
-    ln -s ${install_path}/bin/java /usr/bin/java
-    ln -s ${install_path}/bin/javac /usr/bin/javac
-    ln -s ${install_path}/bin/jar /usr/bin/jar
+    ln -s -f ${install_path}/bin/java /usr/bin/java
+    ln -s -f ${install_path}/bin/javac /usr/bin/javac
+    ln -s -f ${install_path}/bin/jar /usr/bin/jar
 
     sudo echo " " >> /etc/profile
     sudo echo "# Made for jdk env by godcheese on $(date +%F)" >> /etc/profile
