@@ -59,4 +59,5 @@ function install_jdk() {
 
 install_jdk
 echo ${current_path}
-cd ${current_path} && rm $0
+cd ${current_path}
+rm -rf $0
