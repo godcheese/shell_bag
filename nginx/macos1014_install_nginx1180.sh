@@ -17,7 +17,6 @@ function install_nginx() {
     sudo mkdir -p ${nginx_path}
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz -C ${nginx_path}
-    sudo mkdir -p ${install_path}
     cd ${install_path}
     bin_path=`pwd`/bin
     conf_path=${bin_path}/conf/nginx.conf

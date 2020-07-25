@@ -25,12 +25,10 @@ function install_mysql() {
     mysql_path=${webwork_path}${webserver_path}/mysql
     install_version=mysql57
     install_path=${mysql_path}/${install_version}
-#    cd ${temp_path}
-    curl -o ${install_path}.tar.gz ${download_url}
-    tar -zxvf ${install_path}.tar.gz
     sudo mkdir -p ${mysql_path}/data/${install_version}
     sudo mkdir -p ${mysql_path}/log
-    sudo mkdir -p ${install_path}
+    curl -o ${install_path}.tar.gz ${download_url}
+    tar -zxvf ${install_path}.tar.gz
     mv -f ${download_version}/* ${install_path}
     cp -f ${install_path}/support-files/mysql.server /etc/init.d/mysql
     chkconfig --add mysql
