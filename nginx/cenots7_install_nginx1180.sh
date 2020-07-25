@@ -8,13 +8,6 @@ webserver_path=/webserver
 temp_path=/tmp
 
 function install_nginx() {
-    echo -e "\033[32m
-    -------------------------------------------------
-    | macOS 10.15 Auto Install Nginx                |
-    | http://github.com/godcheese/shell_bag         |
-    | author: godcheese [godcheese@outlook.com]     |
-    -------------------------------------------------
-    \033[0m"
 
     download_version=nginx-1.18.0
     download_url=http://nginx.org/download/${download_version}.tar.gz

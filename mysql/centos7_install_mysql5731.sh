@@ -7,11 +7,7 @@ webwork_path=/webwork
 webserver_path=/webserver
 temp_path=/tmp
 
-function install_mysql57() {
-    if [[ ${UID} != 0 ]]; then
-        echo -e "\033[31m 这个脚本必须用 root 执行！ \033[0m"
-        exit
-    fi
+function install_mysql() {
 
     echo -e "\033[32m
     -------------------------------------------------
@@ -100,4 +96,4 @@ EOF
     fi
 }
 
-install_mysql57
+install_mysql

@@ -1,60 +1,43 @@
-#!/usr/bin/env bash
+@echo off
 
-# http://github.com/godcheese/shell_bag
-# author: godcheese [godcheese@outlook.com]
+rem http://github.com/godcheese/shell_bag
+rem author: godcheese [godcheese@outlook.com]
 
-webwork_path=/Volumes/office/GodcheeseWork/dev/webwork
-webserver_path=/webserver
-temp_path=/tmp
-
-function install_nginx() {
-    echo -e "\033[32m
-    -------------------------------------------------
-    | macOS 10.15 Auto Install Nginx                |
-    | http://github.com/godcheese/shell_bag         |
-    | author: godcheese [godcheese@outlook.com]     |
-    -------------------------------------------------
-    \033[0m"
-
-    download_version=nginx-1.18.0
-    download_url=http://nginx.org/download/${download_version}.tar.gz
-    nginx_path=${webwork_path}${webserver_path}/nginx
-    install_version=${download_version}
-    install_path=${nginx_path}/${download_version}
-    echo ${install_path}.tar.gz
-    echo ${download_url}
-    mkdir -p ${nginx_path}
-    curl -o ${install_path}.tar.gz ${download_url}
-    tar -zxvf ${install_path}.tar.gz -C ${nginx_path}
-    mkdir -p ${install_path}
-    cd ${install_path}
-    bin_path=`pwd`/bin
-    conf_path=${bin_path}/conf/nginx.conf
-    logs_path=${bin_path}/logs
-    configure --prefix=${bin_path} --sbin-path=nginx --conf-path=${conf_path} --pid-path=${logs_path}/nginx.pid
-    make && make install
-    cd ${bin_path}
-    nginx -v
-    echo $?
-    version=$?
-    if [[ ! $? -eq 0 ]]; then
-        echo -e "\033[31m
-        Nginx 安装失败！
-	    \033[0m"
-	    exit
-    else
-        echo -e "\033[32m
-        Nginx 安装成功！
-        \033[0m"
-        echo -e "\033[32m
-        - Nginx 版本：${version}
-        - Nginx 安装路径：${install_path}
-        - Nginx bin 路径：${bin_path}
-        - Nginx 配置文件路径：${conf_path}
-        - Nginx 日志路径：${logs_path}
-        \033[0m"
-        exit
-    fi
-}
-
-install_nginx
+echo *************************************************
+echo  Install the JDK
+echo  http://github.com/godcheese/shell_bag
+echo  author: godcheese [godcheese@outlook.com]
+echo *************************************************
+echo.
+echo Prepare to install the JDK...
+echo.
+set /p KEY=Press any key to continue or close the window to exit...
+echo.
+set TEMP_INSTALLATION_PATH=%ProgramFiles%\Java\jdk1.8.0_192
+set /p "JDK_INSTALLATION_PATH=Please enter the JDK installation path(Otherwise %TEMP_INSTALLATION_PATH%):"
+if not defined JDK_INSTALLATION_PATH (set JDK_INSTALLATION_PATH=%TEMP_INSTALLATION_PATH%)
+echo JDK installation path: %JDK_INSTALLATION_PATH%
+echo.
+echo Installing the JDK,please do not do something else...
+echo.
+start /WAIT jdk-8u192-windows-x64.exe /qn
+echo.
+echo JDK install completed.
+echo.
+echo Prepare to configure the JDK...
+echo.
+echo Configuring JDK,please do not do something else...
+set JAVA_HOME=%JDK_INSTALLATION_PATH%
+set PATH=%PATH%;%%JAVA_HOME%%\bin;%%JAVA_HOME%%\jre\bin
+set CLASSPATH=.;%%JAVA_HOME%%\lib\dt.jar;%%JAVA_HOME%%\lib\tools.jar
+set RegV=HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+reg add "%RegV%" /v "JAVA_HOME" /d "%JAVA_HOME%" /f
+reg add "%RegV%" /v "Path" /t REG_EXPAND_SZ /d "%PATH%" /f
+reg add "%RegV%" /v "CLASSPATH" /d "%CLASSPATH%" /f
+echo.
+echo JDK configuration completed.
+echo.
+echo JDK installation path: %JDK_INSTALLATION_PATH%
+echo.
+set /p KEY=Press any key to exit...
+exit

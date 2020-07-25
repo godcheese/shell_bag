@@ -7,11 +7,7 @@ webwork_path=/webwork
 webserver_path=/webserver
 temp_path=/tmp
 
-function install_maven3() {
-    if [[ ${UID} != 0 ]]; then
-        echo -e "\033[31m 这个脚本必须用 root 执行！ \033[0m"
-        exit
-    fi
+function install_maven() {
 
     echo -e "\033[32m
     -------------------------------------------------
@@ -57,4 +53,4 @@ function install_maven3() {
     fi
 }
 
-install_maven3
+install_maven

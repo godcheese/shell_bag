@@ -1,103 +1,43 @@
-#!/usr/bin/env bash
+@echo off
 
-# http://github.com/godcheese/shell_bag
-# author: godcheese [godcheese@outlook.com]
+rem http://github.com/godcheese/shell_bag
+rem author: godcheese [godcheese@outlook.com]
 
-webwork_path=/webwork
-webserver_path=/webserver
-temp_path=/tmp
-
-function install_mysql57() {
-    if [[ ${UID} != 0 ]]; then
-        echo -e "\033[31m 这个脚本必须用 root 执行！ \033[0m"
-        exit
-    fi
-
-    echo -e "\033[32m
-    -------------------------------------------------
-    | CentOS 7 Auto Install MySQL 5.7               |
-    | http://github.com/godcheese/shell_bag         |
-    | author: godcheese [godcheese@outlook.com]     |
-    -------------------------------------------------
-    \033[0m"
-
-    mysql_password=123456
-    mysql_port=3306
-    download_version=mysql-5.7.28-el7-x86_64
-    download_url=http://mirrors.ustc.edu.cn/mysql-ftp/Downloads/MySQL-5.7/${download_version}.tar.gz
-    # download_url=https://downloads.mysql.com/archives/get/p/23/file/${download_version}.tar.gz
-    mysql_path=${webwork_path}${webserver_path}/mysql
-    install_version=mysql57
-    install_path=${mysql_path}/${install_version}
-#    cd ${temp_path}
-    curl -o ${install_path}.tar.gz ${download_url}
-    tar -zxvf ${install_path}.tar.gz
-    mkdir -p ${mysql_path}/data/${install_version}
-    mkdir -p ${mysql_path}/log
-    mkdir -p ${install_path}
-    mv -f ${download_version}/* ${install_path}
-    cp -f ${install_path}/support-files/mysql.server /etc/init.d/mysql
-    chkconfig --add mysql
-    chkconfig mysql on
-    ln -s ${install_path}/bin/mysql /usr/bin/mysql
-    ln -s ${install_path}/bin/mysqldump /usr/bin/mysqldump
-    ln -s ${install_path}/bin/myisamchk /usr/bin/myisamchk
-    ln -s ${install_path}/bin/mysqld_safe /usr/bin/mysqld_safe
-
-    rm -rf ${mysql_path}/${install_version}.lock && touch ${mysql_path}/${install_version}.sock
-    rm -rf ${mysql_path}/${install_version}.pid && touch ${mysql_path}/${install_version}.pid
-    rm -rf ${mysql_path}/log/${install_version}-error.log && touch ${mysql_path}/log/${install_version}-error.log
-
-    rm -rf /etc/my.cnf && touch /etc/my.cnf
-
-    cat > /etc/my.cnf << EOF
-[client]
-socket=${mysql_path}/${install_version}.sock
-[mysqld]
-basedir=${install_path}
-datadir=${mysql_path}/data/${install_version}
-socket=${mysql_path}/${install_version}.sock
-pid-file=${mysql_path}/${install_version}.pid
-port=${mysql_port}
-symbolic-links=0
-[mysqld_safe]
-log-error=${mysql_path}/log/${install_version}-error.log
-pid-file=${mysql_path}/${install_version}.pid
-!includedir /etc/my.cnf.d
-EOF
-
-    echo " " >> /etc/profile
-    echo "# Made for mysql env by godcheese on $(date +%F)" >> /etc/profile
-    echo "export MYSQL_HOME=${install_path}" >> /etc/profile
-    echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile
-    tail -4 /etc/profile
-    source /etc/profile
-
-    groupadd mysql && useradd -r -g mysql mysql
-    chown -R mysql ${mysql_path}
-    ${install_path}/bin/mysqld --initialize-insecure --user=mysql
-    service mysql restart
-    ${install_path}/bin/mysqladmin -u root password "${mysql_password}"
-     mysql --version
-     version=$1
-    if [[ ! $? == 0 ]]; then
-	    echo -e "\033[31m
-	    MySQL 安装失败！
-	    \033[0m"
-	    exit
-    else
-        echo -e "\033[32m
-        MySQL 安装成功！
-        \033[0m"
-        echo -e "\033[32m
-        - MySQL 版本：${version}
-        - MySQL 安装路径：${install_path}
-        - MySQL Data 路径：${mysql_path}/data/${install_version}
-        - MySQL 端口：${mysql_port}
-        - root 密码：${mysql_password}
-        \033[0m"
-        exit
-    fi
-}
-
-install_mysql57
+echo *************************************************
+echo  Install the JDK
+echo  http://github.com/godcheese/shell_bag
+echo  author: godcheese [godcheese@outlook.com]
+echo *************************************************
+echo.
+echo Prepare to install the JDK...
+echo.
+set /p KEY=Press any key to continue or close the window to exit...
+echo.
+set TEMP_INSTALLATION_PATH=%ProgramFiles%\Java\jdk1.8.0_192
+set /p "JDK_INSTALLATION_PATH=Please enter the JDK installation path(Otherwise %TEMP_INSTALLATION_PATH%):"
+if not defined JDK_INSTALLATION_PATH (set JDK_INSTALLATION_PATH=%TEMP_INSTALLATION_PATH%)
+echo JDK installation path: %JDK_INSTALLATION_PATH%
+echo.
+echo Installing the JDK,please do not do something else...
+echo.
+start /WAIT jdk-8u192-windows-x64.exe /qn
+echo.
+echo JDK install completed.
+echo.
+echo Prepare to configure the JDK...
+echo.
+echo Configuring JDK,please do not do something else...
+set JAVA_HOME=%JDK_INSTALLATION_PATH%
+set PATH=%PATH%;%%JAVA_HOME%%\bin;%%JAVA_HOME%%\jre\bin
+set CLASSPATH=.;%%JAVA_HOME%%\lib\dt.jar;%%JAVA_HOME%%\lib\tools.jar
+set RegV=HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+reg add "%RegV%" /v "JAVA_HOME" /d "%JAVA_HOME%" /f
+reg add "%RegV%" /v "Path" /t REG_EXPAND_SZ /d "%PATH%" /f
+reg add "%RegV%" /v "CLASSPATH" /d "%CLASSPATH%" /f
+echo.
+echo JDK configuration completed.
+echo.
+echo JDK installation path: %JDK_INSTALLATION_PATH%
+echo.
+set /p KEY=Press any key to exit...
+exit
