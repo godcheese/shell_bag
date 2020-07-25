@@ -23,13 +23,13 @@ function install_jdk() {
     install_version=jdk8
     install_path=${jdk_path}/${install_version}
     sudo mkdir -p ${jdk_path}
-    sudo curl -o ${install_path}.tar.gz ${download_url}
-    tar -zxvf ${install_path}.tar.gz
-    ln -s -f ${install_path}/bin/java /usr/bin/java
-    ln -s -f ${install_path}/bin/javac /usr/bin/javac
-    ln -s -f ${install_path}/bin/jar /usr/bin/jar
+    sudo curl -o ${temp_path}${install_version}.tar.gz ${download_url}
+    tar -xvf ${temp_path}${install_version}.tar.gz ${jdk_path}/${install_version}
+    ln -sf ${install_path}/bin/java /usr/bin/java
+    ln -sf ${install_path}/bin/javac /usr/bin/javac
+    ln -sf ${install_path}/bin/jar /usr/bin/jar
     sudo echo " " >> /etc/profile
-    sudo echo "# Made for jdk env by godcheese on $(date +%F)" >> /etc/profile
+    sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export JAVA_HOME=${install_path}" >> /etc/profile
     sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
     sudo echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
