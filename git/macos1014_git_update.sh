@@ -12,7 +12,7 @@ function git_update() {
     -------------------------------------------------
     \033[0m"
 
-    brew --version
+   brew --version
    if [[ ! $? -eq 0 ]]; then
       /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
    else
@@ -22,8 +22,8 @@ function git_update() {
    which git
    brew link git --overwrite
    git --version
-  version=`git --version| grep git`
-  echo ${version}
+   version=`git --version| grep git`
+   echo ${version}
    if [[ ! $? -eq 0 ]]; then
         echo -e "\033[31m
         Git 安装失败！
