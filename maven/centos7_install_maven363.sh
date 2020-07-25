@@ -22,9 +22,9 @@ function install_maven() {
     maven_path=${webwork_path}${webserver_path}/maven
     install_version=maven3
     install_path=${maven_path}/${install_version}
+    sudo mkdir -p ${maven_path}
     sudo curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz
-    sudo mkdir -p ${install_path}
     mv -f ${download_version}/* ${install_path}
     ln -s ${install_path}/bin/mvn /usr/bin/mvn
 
