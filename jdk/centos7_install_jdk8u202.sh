@@ -58,4 +58,4 @@ function install_jdk() {
 }
 
 install_jdk
-cd ${current_path} && rm -rf $0
+cd ${current_path} && rm $0
