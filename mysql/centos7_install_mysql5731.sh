@@ -28,9 +28,9 @@ function install_mysql() {
 #    cd ${temp_path}
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz
-    mkdir -p ${mysql_path}/data/${install_version}
-    mkdir -p ${mysql_path}/log
-    mkdir -p ${install_path}
+    sudo mkdir -p ${mysql_path}/data/${install_version}
+    sudo mkdir -p ${mysql_path}/log
+    sudo mkdir -p ${install_path}
     mv -f ${download_version}/* ${install_path}
     cp -f ${install_path}/support-files/mysql.server /etc/init.d/mysql
     chkconfig --add mysql

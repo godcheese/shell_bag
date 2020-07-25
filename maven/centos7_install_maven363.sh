@@ -24,7 +24,7 @@ function install_maven() {
     install_path=${maven_path}/${install_version}
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz
-    mkdir -p ${install_path}
+    sudo mkdir -p ${install_path}
     mv -f ${download_version}/* ${install_path}
     ln -s ${install_path}/bin/mvn /usr/bin/mvn
 
