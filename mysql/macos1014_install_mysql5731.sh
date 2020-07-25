@@ -11,7 +11,7 @@ function install_mysql() {
 
     echo -e "\033[32m
     -------------------------------------------------
-    | CentOS 7 Auto Install MySQL 5.7               |
+    | Install MySQL 5.7                             |
     | http://github.com/godcheese/shell_bag         |
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------

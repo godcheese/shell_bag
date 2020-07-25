@@ -11,7 +11,7 @@ function install_maven() {
 
     echo -e "\033[32m
     -------------------------------------------------
-    | CentOS 7 Auto Install Maven 3                 |
+    | Install Maven 3                               |
     | http://github.com/godcheese/shell_bag         |
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------

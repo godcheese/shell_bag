@@ -11,7 +11,7 @@ function install_mysql() {
 
     echo -e "\033[32m
     -------------------------------------------------
-    | CentOS 7 Auto Install MySQL 5.7               |
+    | Install MySQL 5.7                             |
     | http://github.com/godcheese/shell_bag         |
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
@@ -25,6 +25,7 @@ function install_mysql() {
     mysql_path=${webwork_path}${webserver_path}/mysql
     install_version=mysql57
     install_path=${mysql_path}/${install_version}
+    sudo mkdir -p ${mysql_path}
     sudo mkdir -p ${mysql_path}/data/${install_version}
     sudo mkdir -p ${mysql_path}/log
     sudo curl -o ${install_path}.tar.gz ${download_url}
