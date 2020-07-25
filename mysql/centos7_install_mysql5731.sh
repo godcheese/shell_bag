@@ -62,7 +62,7 @@ pid-file=${mysql_path}/${install_version}.pid
 EOF
 
     sudo echo " " >> /etc/profile
-    sudo echo "# Made for mysql env by godcheese on $(date +%F)" >> /etc/profile
+    sudo echo "# Made for mysql env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export MYSQL_HOME=${install_path}" >> /etc/profile
     sudo echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile
     tail -4 /etc/profile
