@@ -4,7 +4,7 @@
 # author: godcheese [godcheese@outlook.com]
 
 webwork_path=/webwork
-webserver_path=/webserver
+webserver_path=${webwork_path}/webserver
 temp_path=/tmp
 
 function install_jdk() {
@@ -19,12 +19,12 @@ function install_jdk() {
 
     download_version=jdk1.8.0_202
     download_url=https://repo.huaweicloud.com/java/jdk/8u202-b08/jdk-8u202-linux-x64.tar.gz
-    install_path=${webwork_path}${webserver_path}/jdk/jdk8
+    install_path=${webserver_path}/jdk/jdk8
     cd ${temp_path}
-    mkdir -p ${install_path}
+    sudo mkdir -p ${install_path}
     sudo curl -o ${download_version}.tar.gz ${download_url}
     tar -xvf ${download_version}.tar.gz
-    mv -f ${download_version}/${download_version}/* ${install_path}
+    mv -f ${download_version}/* ${install_path}
     ln -sf ${install_path}/bin/java /usr/bin/java
     ln -sf ${install_path}/bin/javac /usr/bin/javac
     ln -sf ${install_path}/bin/jar /usr/bin/jar
