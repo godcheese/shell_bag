@@ -16,14 +16,18 @@ function install_jdk() {
     install_path=$2
     download_url=$3
     file_name=$4
-    sudo curl -o $(basename ${download_url}) ${download_url}
-    tar -zxvf $(basename ${download_url}) -C ${install_path}
-    ln -sf ${install_path}/bin/java /usr/bin/java
-    ln -sf ${install_path}/bin/javac /usr/bin/javac
-    ln -sf ${install_path}/bin/jar /usr/bin/jar
+    base_file_name=$(basename ${download_url})
+    sudo curl -o ${base_file_name} ${download_url}
+    tar -zxvf ${base_file_name} -C ${install_path}
+    if [[ ${file_name}x == ''x ]];then
+        file_name=${base_file_name}
+     fi
+    ln -sf ${install_path}/${file_name}/bin/java /usr/bin/java
+    ln -sf ${install_path}/${file_name}/bin/javac /usr/bin/javac
+    ln -sf ${install_path}/${file_name}/bin/jar /usr/bin/jar
     sudo echo " " >> /etc/profile
     sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export JAVA_HOME=${install_path}" >> /etc/profile
+    sudo echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
     sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
     sudo echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
     tail -4 /etc/profile
@@ -47,7 +51,7 @@ function install_jdk() {
     fi
 }
 
-if [[  $1x == 'jdk'x ]];then
+if [[ $1x == 'jdk'x ]];then
     install_jdk
 elif [[ $1x == 'python'x ]];then
     echo 'python'
