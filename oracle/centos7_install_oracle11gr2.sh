@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# encoding: utf-8.0
 
 # CentOS 7 自动化安装 oracle 11g r2
 

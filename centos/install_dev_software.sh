@@ -8,14 +8,14 @@ function install_jdk() {
 
     echo -e "\033[32m
     -------------------------------------------------
-    | Install JDK 8                                 |
+    | Install   for CentOS                          |
     | http://github.com/godcheese/shell_bag         |
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
     \033[0m"
-    install_path=$1
-    download_url=$2
-    file_name=$3
+    install_path=$2
+    download_url=$3
+    file_name=$4
     sudo curl -o $(basename ${download_url}) ${download_url}
     tar -zxvf $(basename ${download_url}) -C ${install_path}
     ln -sf ${install_path}/bin/java /usr/bin/java
@@ -47,4 +47,18 @@ function install_jdk() {
     fi
 }
 
-install_jdk
+if [[  $1x == 'jdk'x ]];then
+    install_jdk
+elif [[ $1x == 'python'x ]];then
+    echo 'python'
+elif [[ $1x == 'maven'x ]];then
+    echo 'maven'
+elif [[ $1x == 'nginx'x ]];then
+    echo 'nginx'
+elif [[ $1x == 'mysql'x ]];then
+    echo 'mysql'
+elif [[ $1x == 'oracle'x ]];then
+    echo 'oracle'
+else
+    echo '请选择安装项'
+fi

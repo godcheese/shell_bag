@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# encoding: utf-8.0
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
