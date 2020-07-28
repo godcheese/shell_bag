@@ -13,19 +13,20 @@ function install_jdk() {
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------
     \033[0m"
-    install_path=$2
-    download_url=$3
-    file_name=$4
+    install_path=$1
+    download_url=$2
+    file_name=$3
     base_file_name=$(basename ${download_url})
-    echo base_file_name
-#    sudo curl -o ${base_file_name} ${download_url}
+    sudo curl -o ${base_file_name} ${download_url}
+    mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
-    if [[ ${file_name}x == ''x ]];then
-        file_name=${base_file_name}
-     fi
-    ln -sf ${install_path}/${file_name}/bin/java /usr/bin/java
-    ln -sf ${install_path}/${file_name}/bin/javac /usr/bin/javac
-    ln -sf ${install_path}/${file_name}/bin/jar /usr/bin/jar
+    echo ${install_path}/${file_name}
+    rm -rf /usr/bin/java
+    rm -rf /usr/bin/javac
+    rm -rf /usr/bin/jar
+    ln -fs ${install_path}/${file_name}/bin/java /usr/bin/java
+    ln -fs ${install_path}/${file_name}/bin/javac /usr/bin/javac
+    ln -fs ${install_path}/${file_name}/bin/jar /usr/bin/jar
     sudo echo " " >> /etc/profile
     sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
@@ -46,14 +47,14 @@ function install_jdk() {
         \033[0m"
         echo -e "\033[32m
         - JDK 版本：${version}
-        - JDK 安装路径：${install_path}
+        - JDK 安装路径：${install_path}/${file_name}
         \033[0m"
         exit
     fi
 }
 
 if [[ $1x == 'jdk'x ]];then
-    install_jdk
+    install_jdk $2 $3 $4
 elif [[ $1x == 'python'x ]];then
     echo 'python'
 elif [[ $1x == 'maven'x ]];then
@@ -67,3 +68,4 @@ elif [[ $1x == 'oracle'x ]];then
 else
     echo '请选择安装项'
 fi
+
