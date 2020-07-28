@@ -17,7 +17,8 @@ function install_jdk() {
     download_url=$3
     file_name=$4
     base_file_name=$(basename ${download_url})
-    sudo curl -o ${base_file_name} ${download_url}
+    echo base_file_name
+#    sudo curl -o ${base_file_name} ${download_url}
     tar -zxvf ${base_file_name} -C ${install_path}
     if [[ ${file_name}x == ''x ]];then
         file_name=${base_file_name}
