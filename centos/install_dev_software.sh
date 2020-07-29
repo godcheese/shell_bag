@@ -77,12 +77,12 @@ function install_python() {
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
-    rm -rf /usr/bin/java
-    rm -rf /usr/bin/javac
-    rm -rf /usr/bin/jar
-    ln -fs ${install_path}/${file_name}/bin/java /usr/bin/java
-    ln -fs ${install_path}/${file_name}/bin/javac /usr/bin/javac
-    ln -fs ${install_path}/${file_name}/bin/jar /usr/bin/jar
+    cd ${install_path}
+    ./configure --prefix=${install_path}  --with-ssl
+    rm -rf /usr/bin/python
+    rm -rf /usr/bin/pip
+    ln -fs ${install_path}/${file_name}/bin/java /usr/bin/python
+    ln -fs ${install_path}/${file_name}/bin/javac /usr/bin/pip
     sed -i '/JAVA_HOME/d' /etc/profile
     sed -i '/# Made for JDK/d' /etc/profile
     sed -i '/^JAVA_HOME/d' /etc/profile
