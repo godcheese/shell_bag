@@ -3,6 +3,23 @@
 
 ### Linux CentOS Usage Example：
 
+
+
+
+
+| Software | Online install                                               | Offline install                                              |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| JDK      | ```sudo curl -o install_dev_software.sh https://github.com/godcheese/shell_bag/raw/master/centos/install_dev_software.sh && sudo bash install_dev_software.sh jdk /webwork/software/jdk https://repo.huaweicloud.com/java/jdk/8u202-b08/jdk-8u202-linux-x64.tar.gz jdk1.8.0_202``` | ```sudo curl -o install_dev_software.sh https://github.com/godcheese/shell_bag/raw/master/centos/install_dev_software.sh && sudo bash install_dev_software.sh jdk /webwork/software/jdk jdk-8u202-linux-x64.tar.gz jdk1.8.0_202``` |
+|          |                                                              |                                                              |
+|          |                                                              |                                                              |
+
+
+
+
+
+
+
+
 - Install JDK
     - Online
     ```sudo curl -o install_dev_software.sh https://github.com/godcheese/shell_bag/raw/master/centos/install_dev_software.sh && sudo bash install_dev_software.sh jdk /webwork/software/jdk https://repo.huaweicloud.com/java/jdk/8u202-b08/jdk-8u202-linux-x64.tar.gz jdk1.8.0_202```
