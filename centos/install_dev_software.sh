@@ -30,25 +30,19 @@ function install_jdk() {
     ln -fs ${install_path}/${file_name}/bin/java /usr/bin/java
     ln -fs ${install_path}/${file_name}/bin/javac /usr/bin/javac
     ln -fs ${install_path}/${file_name}/bin/jar /usr/bin/jar
-    sed -i '/JAVA_HOME/d' /etc/profile
-    sed -i '/# Made for JDK/d' /etc/profile
-    sed -i '/^JAVA_HOME/d' /etc/profile
-    sed -i '/^export JAVA_HOME/d' /etc/profile
-    sed -i '/^export CLASSPATH/d' /etc/profile
-    sed -i '/^export CLASSPATH/d' /etc/profile
-    sed -i '/^export PATH$/d' /etc/profile
-    sudo echo " " >> /etc/profile
+    sed -i "/# Made for JDK/d" /etc/profile
+    sed -i "/JAVA_HOME/d" /etc/profile
+    sed -i "/CLASSPATH/d" /etc/profile
     sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
-    sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
-    sudo echo "PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
-    sudo echo "export PATH" >> /etc/profile
+    sudo echo "export JAVA_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    sudo echo "export CLASSPATH=\".:\${JAVA_HOME}jre/lib/rt.jar:\${JAVA_HOME}/lib/dt.jar:\${JAVA_HOME}/lib/tools.jar\"" >> /etc/profile
+    sudo echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >> /etc/profile
+    source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    source /etc/profile
     version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
@@ -68,6 +62,7 @@ function install_jdk() {
 }
 
 function install_python() {
+    current_path=$(pwd)
     install_path=$1
     download_url=$2
     file_name=$3
@@ -77,52 +72,48 @@ function install_python() {
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
-    cd ${install_path}
+    cd ${install_path}/${file_name}
+    echo ${install_path}
     ./configure --prefix=${install_path}  --with-ssl
+    make all && make install
+    make clean && make distclean
     rm -rf /usr/bin/python
     rm -rf /usr/bin/pip
-    ln -fs ${install_path}/${file_name}/bin/java /usr/bin/python
-    ln -fs ${install_path}/${file_name}/bin/javac /usr/bin/pip
-    sed -i '/JAVA_HOME/d' /etc/profile
-    sed -i '/# Made for JDK/d' /etc/profile
-    sed -i '/^JAVA_HOME/d' /etc/profile
-    sed -i '/^export JAVA_HOME/d' /etc/profile
-    sed -i '/^export CLASSPATH/d' /etc/profile
-    sed -i '/^export CLASSPATH/d' /etc/profile
-    sed -i '/^export PATH$/d' /etc/profile
+    ln -fs ${install_path}/${file_name}/bin/python /usr/bin/python
+    ln -fs ${install_path}/${file_name}/bin/pip /usr/bin/pip
+    sed -i "/# Made for Python/d" /etc/profile
+    sed -i "/PYTHON_HOME/d" /etc/profile
     sudo echo " " >> /etc/profile
-    sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
-    sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
-    sudo echo "PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
-    sudo echo "export PATH" >> /etc/profile
+    sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    sudo echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    sudo echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
+    cd ${current_path}
+    source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    source /etc/profile
-    version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
+    version=$(python --version)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
-        JDK 安装失败！
+        Python 安装失败！
         \033[0m"
 	    exit
     else
         echo -e "\033[32m
-        JDK 安装成功！
+        Python 安装成功！
         \033[0m"
         echo -e "\033[32m
-        - JDK 版本：${version}
-        - JDK 安装路径：${install_path}/${file_name}
+        - Python 版本：${version}
+        - Python 安装路径：${install_path}/${file_name}
         \033[0m"
         exit
     fi
 }
 
-
-
 show_banner
+
 if [[ $1x == "jdk"x ]]; then
     echo "Installing jdk..."
     install_jdk $2 $3 $4
