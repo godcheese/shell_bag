@@ -61,8 +61,9 @@ function install_jdk() {
     fi
 }
 
-function install_python() {
-    current_path=$(pwd)
+function install_python3() {
+    yum install -y gcc
+    yum install -y zlib*
     install_path=$1
     download_url=$2
     file_name=$3
@@ -72,22 +73,18 @@ function install_python() {
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
-    cd ${install_path}/${file_name}
-    echo ${install_path}
-    ./configure --prefix=${install_path}  --with-ssl
-    make all && make install
-    make clean && make distclean
+    ${install_path}/${file_name}/configure --prefix=${install_path}/${file_name}  --with-ssl
+    make && make install
     rm -rf /usr/bin/python
     rm -rf /usr/bin/pip
-    ln -fs ${install_path}/${file_name}/bin/python /usr/bin/python
-    ln -fs ${install_path}/${file_name}/bin/pip /usr/bin/pip
+    ln -fs ${install_path}/${file_name}/bin/python3 /usr/bin/python3
+    ln -fs ${install_path}/${file_name}/bin/pip3 /usr/bin/pip3
     sed -i "/# Made for Python/d" /etc/profile
     sed -i "/PYTHON_HOME/d" /etc/profile
     sudo echo " " >> /etc/profile
     sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
     sudo echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
-    cd ${current_path}
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -115,24 +112,24 @@ function install_python() {
 show_banner
 
 if [[ $1x == "jdk"x ]]; then
-    echo "Installing jdk..."
+    echo "Installing JDK..."
     install_jdk $2 $3 $4
-elif [[ $1x == "python"x ]]; then
-    echo "Installing python..."
-    install_python $2 $3 $4
+elif [[ $1x == "python3"x ]]; then
+    echo "Installing Python 3.x..."
+    install_python3 $2 $3 $4
 elif [[ $1x == "maven"x ]]; then
-    echo "Installing maven..."
+    echo "Installing Maven..."
     install_maven $2 $3 $4
 elif [[ $1x == "nginx"x ]]; then
-    echo "Installing nginx..."
+    echo "Installing Nginx..."
     install_nginx $2 $3 $4
 elif [[ $1x == "mysql"x ]]; then
-    echo "Installing mysql..."
+    echo "Installing MySQL..."
     install_mysql $2 $3 $4
 elif [[ $1x == "oracle"x ]]; then
-    echo "Installing oracle..."
+    echo "Installing Oracle..."
     install_oracle $2 $3 $4
 else
-    echo "请选择安装项"
+    echo "请先选择安装项"
 fi
 

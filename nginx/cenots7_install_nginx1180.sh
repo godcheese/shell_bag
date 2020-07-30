@@ -24,6 +24,8 @@ function install_nginx() {
     logs_path=${bin_path}/logs
     configure --prefix=${bin_path} --sbin-path=nginx --conf-path=${conf_path} --pid-path=${logs_path}/nginx.pid
     make && make install
+    #make all && make install
+   # make clean && make distclean
     cd ${bin_path}
     nginx -v
     echo $?
