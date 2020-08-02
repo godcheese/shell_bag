@@ -18,9 +18,9 @@ function install_jdk() {
     file_name=$3
     sudo curl -o $(basename ${download_url}) ${download_url}
     tar -zxvf $(basename ${download_url}) -C ${install_path}
-    ln -sf ${install_path}/bin/java /usr/bin/java
-    ln -sf ${install_path}/bin/javac /usr/bin/javac
-    ln -sf ${install_path}/bin/jar /usr/bin/jar
+    ln -fs ${install_path}/bin/java /usr/bin/java
+    ln -fs ${install_path}/bin/javac /usr/bin/javac
+    ln -fs ${install_path}/bin/jar /usr/bin/jar
     sudo echo " " >> /etc/profile
     sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export JAVA_HOME=${install_path}" >> /etc/profile
