@@ -62,6 +62,7 @@ function install_jdk() {
 }
 
 function install_python3() {
+    current_path=$(pwd)
     yum install -y gcc
     yum install -y zlib*
     install_path=$1
@@ -73,10 +74,12 @@ function install_python3() {
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
-    ${install_path}/${file_name}/configure --prefix=${install_path}/${file_name}  --with-ssl
+    cd ${install_path}/${file_name}
+    ./configure --prefix=${install_path}/${file_name}  --with-ssl
     make && make install
-    rm -rf /usr/bin/python
-    rm -rf /usr/bin/pip
+    cd ${current_path}
+    rm -rf /usr/bin/python3
+    rm -rf /usr/bin/pip3
     ln -fs ${install_path}/${file_name}/bin/python3 /usr/bin/python3
     ln -fs ${install_path}/${file_name}/bin/pip3 /usr/bin/pip3
     sed -i "/# Made for Python/d" /etc/profile
@@ -134,7 +137,7 @@ function install_maven() {
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    version=$(maven --version)
+    version=$(mvn --version)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Maven 安装失败！
@@ -153,8 +156,9 @@ function install_maven() {
 }
 
 function install_nginx() {
-#     yum install -y gcc
-#     yum install -y zlib*
+    current_path=$(pwd)
+    yum install -y gcc
+    yum install -y pcre-devel
     install_path=$1
     download_url=$2
     file_name=$3
@@ -164,15 +168,20 @@ function install_nginx() {
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
-    ${install_path}/${file_name}/configure --prefix=${install_path}/${file_name}  --sbin-path=nginx --conf-path=${install_path}/${file_name}/conf/nginx.conf --pid-path=${install_path}/${file_name}/logs/nginx.pid
+    mkdir -p ${install_path}
+#     mkdir -p ${install_path}/${file_name}/bin/logs
+#     mkdir -p ${install_path}/${file_name}/bin/conf
+    cd ${install_path}/${file_name}
+    ./configure --prefix=${install_path}/${file_name}/bin  --sbin-path=nginx --conf-path=${install_path}/${file_name}/bin/conf/nginx.conf --pid-path=${install_path}/${file_name}/bin/logs/nginx.pid
     make && make install
+    cd ${current_path}
     rm -rf /usr/bin/nginx
-    ln -fs ${install_path}/${file_name}/nginx /usr/bin/nginx
+    ln -fs ${install_path}/${file_name}/bin/nginx /usr/bin/nginx
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
     sudo echo " " >> /etc/profile
     sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export NGINX_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    sudo echo "export NGINX_HOME=\"${install_path}/${file_name}/bin\"" >> /etc/profile
     sudo echo "export PATH=\"\${NGINX_HOME}:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
@@ -180,7 +189,7 @@ function install_nginx() {
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    version=$(nginx --version)
+    version=$(nginx -v 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Nginx 安装失败！
@@ -192,7 +201,7 @@ function install_nginx() {
         \033[0m"
         echo -e "\033[32m
         - Nginx 版本：${version}
-        - Nginx 安装路径：${install_path}/${file_name}
+        - Nginx 安装路径：${install_path}/${file_name}/bin
         \033[0m"
         exit
     fi
@@ -231,7 +240,7 @@ function install_mysql() {
 socket=${install_path}/${file_name}/${file_name}.sock
 [mysqld]
 basedir=${install_path}/${file_name}
-datadir=${install_path}/${file_name}/${file_name}/data
+datadir=${install_path}/${file_name}/data
 socket=${install_path}/${file_name}/${file_name}.sock
 pid-file=${install_path}/${file_name}/${file_name}.pid
 port=3306
@@ -254,7 +263,7 @@ EOF
     ${profile}
     \033[0m"
     groupadd mysql && useradd -r -g mysql mysql
-    chown -R mysql ${mysql_path}
+    chown -R mysql ${install_path}/${file_name}
     ${install_path}/${file_name}/bin/mysqld --initialize-insecure --user=mysql
     service mysql restart
     ${install_path}/${file_name}/bin/mysqladmin -u root password "123456"
