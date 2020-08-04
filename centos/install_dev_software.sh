@@ -48,7 +48,7 @@ function install_jdk() {
 	    echo -e "\033[31m
         JDK 安装失败！
         \033[0m"
-	    exit
+	    exit 0
     else
         echo -e "\033[32m
         JDK 安装成功！
@@ -57,7 +57,7 @@ function install_jdk() {
         - JDK 版本：${version}
         - JDK 安装路径：${install_path}/${file_name}
         \033[0m"
-        exit
+        exit 0
     fi
 }
 
@@ -100,7 +100,7 @@ function install_python3() {
 	    echo -e "\033[31m
         Python 安装失败！
         \033[0m"
-	    exit
+	    exit 0
     else
         echo -e "\033[32m
         Python 安装成功！
@@ -110,7 +110,7 @@ function install_python3() {
         - Pip 版本：${version2}
         - Python 安装路径：${install_path}/${file_name}
         \033[0m"
-        exit
+        exit 0
     fi
 }
 
@@ -142,7 +142,7 @@ function install_maven() {
 	    echo -e "\033[31m
         Maven 安装失败！
         \033[0m"
-	    exit
+	    exit 0
     else
         echo -e "\033[32m
         Maven 安装成功！
@@ -151,7 +151,7 @@ function install_maven() {
         - Maven 版本：${version}
         - Maven 安装路径：${install_path}/${file_name}
         \033[0m"
-        exit
+        exit 0
     fi
 }
 
@@ -179,27 +179,48 @@ function install_nginx() {
 
     rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
     cat > ${install_path}/${file_name}/bin/nginx.service << EOF
-[Unit]
-Description=nginx service
-After=network.target
-[Service]
-Type=forking
-ExecStart=/usr/bin/nginx
-ExecReload=/usr/bin/nginx -s reload
-ExecStop=/usr/bin/nginx -s quit
-PrivateTmp=true
-[Install]
-WantedBy=multi-user.target
+#!/bin/sh
+# chkconfig: - 85 15
+# description: nginx is a World Wide Web server. It is used to serve.
+# author: godcheese [godcheese@outlook.com]
+
+bin_path=
+if test -z "\${bin_path}" ; then
+    bin_path="/usr/bin/nginx"
+fi
+
+if ! test -r "\${bin_path}" ; then
+    echo "Nginx not found:\${bin_path}"
+    exit 0
+fi
+
+case "\$1" in
+    "start")
+        echo "Starting nginx"
+        "\${bin_path}"
+        echo "Nginx start successful"
+        ;;
+    "stop")
+        echo "Stopping nginx"
+        "\${bin_path}" -s stop
+        echo "Nginx stop successful"
+        ;;
+    "reload")
+        echo "Reloading nginx"
+        "\${bin_path}" -s reload
+        echo "Nginx reload successful"
+        ;;
+esac
 EOF
 
-   \cp -rf ${install_path}/${file_name}/bin/nginx.service /etc/init.d/nginx
-    chkconfig --add nginx
-    chkconfig nginx on
+    \cp -rf ${install_path}/${file_name}/bin/nginx.service /etc/init.d/nginx
+    chmod 755 /etc/init.d/nginx
+    chkconfig --add nginx && chkconfig nginx on
 
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
     sudo echo " " >> /etc/profile
-    sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    sudo echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export NGINX_HOME=\"${install_path}/${file_name}/bin\"" >> /etc/profile
     sudo echo "export PATH=\"\${NGINX_HOME}:\${PATH}\"" >> /etc/profile
     source /etc/profile
@@ -208,12 +229,13 @@ EOF
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
+    service nginx restart
     version=$(nginx -v 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Nginx 安装失败！
         \033[0m"
-	    exit
+	    exit 0
     else
         echo -e "\033[32m
         Nginx 安装成功！
@@ -223,15 +245,21 @@ EOF
         - Nginx 安装路径：${install_path}/${file_name}/bin
         - Nginx 配置文件路径：${install_path}/${file_name}/bin/conf/nginx.conf
         - Nginx 常用命令：
-          启动：./nginx
-          停止：./nginx -s stop
-          重启：./nginx -s reload
+          启动：service nginx start
+          停止：service nginx stop
+          重启：service nginx restart
         \033[0m"
-        exit
+        exit 0
     fi
 }
 
 function install_mysql() {
+    service mysql status
+    if [[ ! $? == 1 ]]; then
+	    service mysql stop
+	    rm -rf /var/lock/subsys/mysql
+	fi
+
     install_path=$1
     download_url=$2
     file_name=$3
@@ -245,8 +273,7 @@ function install_mysql() {
     mkdir -p ${install_path}/${file_name}/log
     rm -rf /etc/init.d/mysql
     \cp -rf ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
-    chkconfig --add mysql
-    chkconfig mysql on
+    chkconfig --add mysql && chkconfig mysql on
     rm -rf /usr/bin/mysql
     rm -rf /usr/bin/mysqldump
     rm -rf /usr/bin/myisamchk
@@ -259,7 +286,6 @@ function install_mysql() {
     sudo touch ${install_path}/${file_name}/${file_name}.sock
     sudo touch ${install_path}/${file_name}/${file_name}.pid
     sudo touch ${install_path}/${file_name}/log/${file_name}-error.log
-    chmod -R 777 ${install_path}/${file_name}
 
     rm -rf /etc/my.cnf && sudo touch /etc/my.cnf
     cat > /etc/my.cnf << EOF
@@ -289,7 +315,7 @@ EOF
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    groupadd -f mysql && useradd -r -g mysql mysql
+    groupadd -f mysql && useradd -r -g mysql mysql -s /bin/false
     chown -R mysql ${install_path}/${file_name}
     ${install_path}/${file_name}/bin/mysqld --initialize-insecure --user=mysql
     service mysql restart
@@ -299,7 +325,7 @@ EOF
 	    echo -e "\033[31m
         MySQL 安装失败！
         \033[0m"
-	    exit
+	    exit 0
     else
         echo -e "\033[32m
         MySQL 安装成功！
@@ -316,31 +342,38 @@ EOF
           停止：service mysql stop
           重启：service mysql restart
         \033[0m"
-        exit
+        exit 0
     fi
 }
 
 show_banner
 
-if [[ $1x == "jdk"x ]]; then
-    echo "Installing JDK..."
-    install_jdk $2 $3 $4
-elif [[ $1x == "python3"x ]]; then
-    echo "Installing Python 3.x..."
-    install_python3 $2 $3 $4
-elif [[ $1x == "maven"x ]]; then
-    echo "Installing Maven..."
-    install_maven $2 $3 $4
-elif [[ $1x == "nginx"x ]]; then
-    echo "Installing Nginx..."
-    install_nginx $2 $3 $4
-elif [[ $1x == "mysql"x ]]; then
-    echo "Installing MySQL..."
-    install_mysql $2 $3 $4
-elif [[ $1x == "oracle"x ]]; then
-    echo "Installing Oracle..."
-    install_oracle $2 $3 $4
-else
-    echo "请先选择安装项"
-fi
-
+case "$1" in
+    "jdk")
+        echo "Installing JDK..."
+        install_jdk $2 $3 $4
+        ;;
+    "python3")
+        echo "Installing Python 3.x..."
+        install_python3 $2 $3 $4
+        ;;
+    "maven")
+        ${bin_path}/nginx -s reload
+        ;;
+    "nginx")
+        echo "Installing Nginx..."
+        install_nginx $2 $3 $4
+        ;;
+    "mysql")
+        echo "Installing MySQL..."
+        install_mysql $2 $3 $4
+        ;;
+    "oracle")
+        echo "Installing Oracle..."
+        install_oracle $2 $3 $4
+        ;;
+    *)
+        echo "请先选择安装项"
+        exit 0
+        ;;
+esac
