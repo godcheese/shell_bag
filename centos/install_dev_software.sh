@@ -22,7 +22,7 @@ function install_jdk() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path}
+    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
     tar -zxvf ${base_file_name} -C ${install_path}
     rm -rf /usr/bin/java
     rm -rf /usr/bin/javac
@@ -72,7 +72,7 @@ function install_python3() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path}
+    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
     tar -zxvf ${base_file_name} -C ${install_path}
     cd ${install_path}/${file_name}
     ./configure --prefix=${install_path}/${file_name}  --with-ssl
@@ -122,7 +122,7 @@ function install_maven() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path}
+    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
     tar -zxvf ${base_file_name} -C ${install_path}
     rm -rf /usr/bin/mvn
     ln -fs ${install_path}/${file_name}/bin/mvn /usr/bin/mvn
@@ -158,6 +158,7 @@ function install_maven() {
 function install_nginx() {
     current_path=$(pwd)
     yum install -y gcc
+    yum install -y zlib*
     yum install -y pcre-devel
     install_path=$1
     download_url=$2
@@ -166,17 +167,35 @@ function install_nginx() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path}
+    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
     tar -zxvf ${base_file_name} -C ${install_path}
     mkdir -p ${install_path}
-#     mkdir -p ${install_path}/${file_name}/bin/logs
-#     mkdir -p ${install_path}/${file_name}/bin/conf
     cd ${install_path}/${file_name}
     ./configure --prefix=${install_path}/${file_name}/bin  --sbin-path=nginx --conf-path=${install_path}/${file_name}/bin/conf/nginx.conf --pid-path=${install_path}/${file_name}/bin/logs/nginx.pid
     make && make install
     cd ${current_path}
     rm -rf /usr/bin/nginx
     ln -fs ${install_path}/${file_name}/bin/nginx /usr/bin/nginx
+
+    rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
+    cat > ${install_path}/${file_name}/bin/nginx.service << EOF
+[Unit]
+Description=nginx service
+After=network.target
+[Service]
+Type=forking
+ExecStart=/usr/bin/nginx
+ExecReload=/usr/bin/nginx -s reload
+ExecStop=/usr/bin/nginx -s quit
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target
+EOF
+
+   \cp -rf ${install_path}/${file_name}/bin/nginx.service /etc/init.d/nginx
+    chkconfig --add nginx
+    chkconfig nginx on
+
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
     sudo echo " " >> /etc/profile
@@ -202,6 +221,11 @@ function install_nginx() {
         echo -e "\033[32m
         - Nginx 版本：${version}
         - Nginx 安装路径：${install_path}/${file_name}/bin
+        - Nginx 配置文件路径：${install_path}/${file_name}/bin/conf/nginx.conf
+        - Nginx 常用命令：
+          启动：./nginx
+          停止：./nginx -s stop
+          重启：./nginx -s reload
         \033[0m"
         exit
     fi
@@ -215,11 +239,12 @@ function install_mysql() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path}
+    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
     tar -zxvf ${base_file_name} -C ${install_path}
     mkdir -p ${install_path}/${file_name}/data
     mkdir -p ${install_path}/${file_name}/log
-    cp -f ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
+    rm -rf /etc/init.d/mysql
+    \cp -rf ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
     chkconfig --add mysql
     chkconfig mysql on
     rm -rf /usr/bin/mysql
@@ -231,9 +256,11 @@ function install_mysql() {
     ln -fs ${install_path}/${file_name}/bin/myisamchk /usr/bin/myisamchk
     ln -fs ${install_path}/${file_name}/bin/mysqld_safe /usr/bin/mysqld_safe
 
-    rm -rf ${install_path}/${file_name}/${file_name}.lock && sudo touch ${install_path}/${file_name}/${file_name}.sock
-    rm -rf ${install_path}/${file_name}/${file_name}.pid && sudo touch ${install_path}/${file_name}/${file_name}.pid
-    rm -rf ${install_path}/${file_name}/log/${file_name}-error.log && sudo touch ${install_path}/${file_name}/${file_name}-error.log
+    sudo touch ${install_path}/${file_name}/${file_name}.sock
+    sudo touch ${install_path}/${file_name}/${file_name}.pid
+    sudo touch ${install_path}/${file_name}/log/${file_name}-error.log
+    chmod -R 777 ${install_path}/${file_name}
+
     rm -rf /etc/my.cnf && sudo touch /etc/my.cnf
     cat > /etc/my.cnf << EOF
 [client]
@@ -262,12 +289,12 @@ EOF
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    groupadd mysql && useradd -r -g mysql mysql
+    groupadd -f mysql && useradd -r -g mysql mysql
     chown -R mysql ${install_path}/${file_name}
     ${install_path}/${file_name}/bin/mysqld --initialize-insecure --user=mysql
     service mysql restart
     ${install_path}/${file_name}/bin/mysqladmin -u root password "123456"
-    version=$(mysql -version)
+    version=$(mysql --version)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         MySQL 安装失败！
@@ -284,6 +311,10 @@ EOF
         - MySQL log 路径：${install_path}/${file_name}/log
         - MySQL 端口：3306
         - root 密码：123456
+        - MySQL 常用命令：
+          启动：service mysql start
+          停止：service mysql stop
+          重启：service mysql restart
         \033[0m"
         exit
     fi
