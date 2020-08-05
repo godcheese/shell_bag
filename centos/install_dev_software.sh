@@ -22,7 +22,7 @@ function install_jdk() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
+    rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
     rm -rf /usr/bin/java
     rm -rf /usr/bin/javac
@@ -72,7 +72,7 @@ function install_python3() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
+    rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
     cd ${install_path}/${file_name}
     ./configure --prefix=${install_path}/${file_name}  --with-ssl
@@ -84,7 +84,6 @@ function install_python3() {
     ln -fs ${install_path}/${file_name}/bin/pip3 /usr/bin/pip3
     sed -i "/# Made for Python/d" /etc/profile
     sed -i "/PYTHON_HOME/d" /etc/profile
-    sudo echo " " >> /etc/profile
     sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
     sudo echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
@@ -122,7 +121,7 @@ function install_maven() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
+    rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
     rm -rf /usr/bin/mvn
     ln -fs ${install_path}/${file_name}/bin/mvn /usr/bin/mvn
@@ -167,7 +166,7 @@ function install_nginx() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
+    rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
     mkdir -p ${install_path}
     cd ${install_path}/${file_name}
@@ -203,10 +202,10 @@ case "\$1" in
         "\${bin_path}" -s stop
         echo "Nginx stop successful"
         ;;
-    "reload")
-        echo "Reloading nginx"
+    "restart")
+        echo "Restarting nginx"
         "\${bin_path}" -s reload
-        echo "Nginx reload successful"
+        echo "Nginx restart successful"
         ;;
 esac
 EOF
@@ -217,7 +216,6 @@ EOF
 
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
-    sudo echo " " >> /etc/profile
     sudo echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
     sudo echo "export NGINX_HOME=\"${install_path}/${file_name}/bin\"" >> /etc/profile
     sudo echo "export PATH=\"\${NGINX_HOME}:\${PATH}\"" >> /etc/profile
@@ -227,7 +225,7 @@ EOF
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    service nginx restart
+    service nginx start
     version=$(nginx -v 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
@@ -265,7 +263,7 @@ function install_mysql() {
     if [[ ${download_url} =~ ^http.* ]]; then
         sudo curl -o ${base_file_name} ${download_url}
     fi
-    mkdir -p ${install_path} && rm -rf ${install_path}/${file_name}
+    rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
     mkdir -p ${install_path}/${file_name}/data
     mkdir -p ${install_path}/${file_name}/log
@@ -356,7 +354,7 @@ case "$1" in
         install_python3 $2 $3 $4
         ;;
     "maven")
-        ${bin_path}/nginx -s reload
+        install_maven $2 $3 $4
         ;;
     "nginx")
         echo "Installing Nginx..."
