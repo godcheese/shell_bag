@@ -188,12 +188,10 @@ bin_path=
 if test -z "\${bin_path}" ; then
     bin_path="/usr/bin/nginx"
 fi
-
 if ! test -r "\${bin_path}" ; then
     echo "Nginx not found:\${bin_path}"
     exit 0
 fi
-
 case "\$1" in
     "start")
         echo "Starting nginx"
