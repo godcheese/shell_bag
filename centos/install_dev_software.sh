@@ -233,6 +233,11 @@ EOF
         \033[0m"
 	    exit 0
     else
+        firewall-cmd --zone=public --add-service=http --permanent
+        firewall-cmd --zone=public --add-service=https --permanent
+        firewall-cmd --zone=public --add-port=80/tcp --permanent
+        firewall-cmd --zone=public --add-port=443/tcp --permanent
+        firewall-cmd --reload
         echo -e "\033[32m
         Nginx 安装成功！
         \033[0m"
@@ -323,6 +328,8 @@ EOF
         \033[0m"
 	    exit 0
     else
+        firewall-cmd --zone=public --add-port=3306/tcp --permanent
+        firewall-cmd --reload
         echo -e "\033[32m
         MySQL 安装成功！
         \033[0m"
