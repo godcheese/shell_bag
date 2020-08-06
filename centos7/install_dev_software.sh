@@ -43,7 +43,7 @@ function install_jdk() {
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
+    version=$(java -version 2>&1)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         JDK 安装失败！
@@ -93,8 +93,8 @@ function install_python3() {
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    version1=$(python3 --version)
-    version2=$(pip3 --version)
+    version1=$(python3 --version 2>&1)
+    version2=$(pip3 --version 2>&1)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Python 安装失败！
@@ -136,7 +136,7 @@ function install_maven() {
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    version=$(mvn --version)
+    version=$(mvn --version 2>&1)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Maven 安装失败！
@@ -155,6 +155,13 @@ function install_maven() {
 }
 
 function install_nginx() {
+    if test -r /etc/init.d/nginx; then
+        service nginx stop
+    else
+        if test -r /usr/bin/nginx; then
+            nginx -s stop
+        fi
+    fi
     current_path=$(pwd)
     yum install -y gcc
     yum install -y zlib*
@@ -175,7 +182,7 @@ function install_nginx() {
 
     make && make install
     cd ${current_path}
-    if test -z /usr/bin/nginx; then
+    if test -r /usr/bin/nginx; then
         result=$(ps -ef | grep nginx | grep -v grep)
         if [[ ${result} =~ "00:00:00 nginx" ]]; then
             nginx -s stop
@@ -261,18 +268,18 @@ EOF
     ${profile}
     \033[0m"
     service nginx restart
-    version=$(nginx -v 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
+    version=$(nginx -v 2>&1)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         Nginx 安装失败！
         \033[0m"
 	    exit 0
     else
-        firewall-cmd --zone=public --add-service=http --permanent > /dev/null
-        firewall-cmd --zone=public --add-service=https --permanent > /dev/null
-        firewall-cmd --zone=public --add-port=80/tcp --permanent > /dev/null
-        firewall-cmd --zone=public --add-port=443/tcp --permanent > /dev/null
-        firewall-cmd --reload > /dev/null
+        firewall-cmd --zone=public --add-service=http --permanent > /dev/null 2>&1
+        firewall-cmd --zone=public --add-service=https --permanent > /dev/null 2>&1
+        firewall-cmd --zone=public --add-port=80/tcp --permanent > /dev/null 2>&1
+        firewall-cmd --zone=public --add-port=443/tcp --permanent > /dev/null 2>&1
+        firewall-cmd --reload > /dev/null 2>&1
         echo -e "\033[32m
         Nginx 安装成功！
         \033[0m"
@@ -280,22 +287,25 @@ EOF
         - Nginx 版本：${version}
         - Nginx 安装路径：${install_path}/${file_name}/bin
         - Nginx 配置文件路径：${install_path}/${file_name}/bin/conf/nginx.conf
+        - Nginx 日志文件路径：${install_path}/${file_name}/bin/conf/nginx.conf
         - Nginx 常用命令：
           状态：service nginx status
           启动：service nginx start
           停止：service nginx stop
           重启：service nginx restart
-          测试配置文件语法：service nginx test
+          测试配置：service nginx test
         \033[0m"
         exit 0
     fi
 }
 
 function install_mysql() {
-    service mysql status
-    if [[ ! $? == 1 ]]; then
-	    service mysql stop
-	    rm -rf /var/lock/subsys/mysql
+    if test -r /etc/init.d/mysql; then
+        service mysql status
+        if [[ ! $? == 1 ]]; then
+            service mysql stop
+	        rm -rf /var/lock/subsys/mysql
+	    fi
 	fi
     install_path=$1
     download_url=$2
@@ -308,9 +318,6 @@ function install_mysql() {
     tar -zxvf ${base_file_name} -C ${install_path}
     mkdir -p ${install_path}/${file_name}/data
     mkdir -p ${install_path}/${file_name}/log
-    if test -z /etc/init.d/mysql; then
-        service mysql stop
-    fi
     rm -rf /etc/init.d/mysql
     \cp -rf ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
     chkconfig --add mysql && chkconfig mysql on
@@ -323,24 +330,24 @@ function install_mysql() {
     ln -fs ${install_path}/${file_name}/bin/myisamchk /usr/bin/myisamchk
     ln -fs ${install_path}/${file_name}/bin/mysqld_safe /usr/bin/mysqld_safe
 
-    sudo touch ${install_path}/${file_name}/${file_name}.sock
-    sudo touch ${install_path}/${file_name}/${file_name}.pid
-    sudo touch ${install_path}/${file_name}/log/${file_name}-error.log
+    sudo touch ${install_path}/${file_name}/mysql.sock
+    sudo touch ${install_path}/${file_name}/mysql.pid
+    sudo touch ${install_path}/${file_name}/log/mysql-error.log
 
     rm -rf /etc/my.cnf && sudo touch /etc/my.cnf
     cat > /etc/my.cnf << EOF
 [client]
-socket=${install_path}/${file_name}/${file_name}.sock
+socket=${install_path}/${file_name}/mysql.sock
 [mysqld]
 basedir=${install_path}/${file_name}
 datadir=${install_path}/${file_name}/data
-socket=${install_path}/${file_name}/${file_name}.sock
-pid-file=${install_path}/${file_name}/${file_name}.pid
+socket=${install_path}/${file_name}/mysql.sock
+pid-file=${install_path}/${file_name}/mysql.pid
 port=3306
 symbolic-links=0
 [mysqld_safe]
-log-error=${install_path}/${file_name}/log/${file_name}-error.log
-pid-file=${install_path}/${file_name}/${file_name}.pid
+log-error=${install_path}/${file_name}/log/mysql-error.log
+pid-file=${install_path}/${file_name}/mysql.pid
 !includedir /etc/my.cnf.d
 EOF
 
@@ -360,26 +367,27 @@ EOF
     ${install_path}/${file_name}/bin/mysqld --initialize-insecure --user=mysql
     service mysql restart
     ${install_path}/${file_name}/bin/mysqladmin -u root password "123456"
-    version=$(mysql --version)
+    version=$(mysql --version 2>&1)
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
         MySQL 安装失败！
         \033[0m"
 	    exit 0
     else
-        firewall-cmd --zone=public --add-port=3306/tcp --permanent
-        firewall-cmd --reload
+        firewall-cmd --zone=public --add-port=3306/tcp --permanent > /dev/null 2>&1
+        firewall-cmd --reload > /dev/null 2>&1
         echo -e "\033[32m
         MySQL 安装成功！
         \033[0m"
         echo -e "\033[32m
         - MySQL 版本：${version}
         - MySQL 安装路径：${install_path}/${file_name}
-        - MySQL data 路径：${install_path}/${file_name}/data
-        - MySQL log 路径：${install_path}/${file_name}/log
+        - MySQL数据保存路径：${install_path}/${file_name}/data
+        - MySQL日志文件路径：${install_path}/${file_name}/log
         - MySQL 端口：3306
         - root 密码：123456
         - MySQL 常用命令：
+          状态：service mysql status
           启动：service mysql start
           停止：service mysql stop
           重启：service mysql restart
@@ -409,6 +417,10 @@ case "$1" in
     "mysql")
         echo "Installing MySQL..."
         install_mysql $2 $3 $4
+        ;;
+    "redis")
+        echo "Installing Redis..."
+        install_redis $2 $3 $4
         ;;
     "oracle")
         echo "Installing Oracle..."

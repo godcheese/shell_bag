@@ -151,7 +151,6 @@ dbstart $ORACLE_HOME
 dbshut $ORACLE_HOME
 
 # 远程连接oracle
-
 sqlplus sys/oracle@192.168.100.131:1521/ORCL.LAN as sysdba
 conn sys/oracle@192.168.100.131:1521/ORCL.LAN as sysdba
 ORCL.LAN是服务名 不是sid
