@@ -78,8 +78,8 @@ function install_python3() {
     ./configure --prefix=${install_path}/${file_name}  --with-ssl
     make && make install
     cd ${current_path}
-    rm -rf /usr/bin/python3
     rm -rf /usr/bin/pip3
+    rm -rf /usr/bin/python3
     ln -fs ${install_path}/${file_name}/bin/python3 /usr/bin/python3
     ln -fs ${install_path}/${file_name}/bin/pip3 /usr/bin/pip3
     sed -i "/# Made for Python/d" /etc/profile
@@ -171,18 +171,24 @@ function install_nginx() {
     mkdir -p ${install_path}
     cd ${install_path}/${file_name}
     ./configure --prefix=${install_path}/${file_name}/bin  --sbin-path=nginx --conf-path=${install_path}/${file_name}/bin/conf/nginx.conf --pid-path=${install_path}/${file_name}/bin/logs/nginx.pid
+#     sudo touch ${install_path}/${file_name}/bin/logs/nginx.pid
+
     make && make install
     cd ${current_path}
+    if test -z /usr/bin/nginx; then
+        result=$(ps -ef | grep nginx | grep -v grep)
+        if [[ ${result} =~ "00:00:00 nginx" ]]; then
+            nginx -s stop
+        fi
+    fi
     rm -rf /usr/bin/nginx
     ln -fs ${install_path}/${file_name}/bin/nginx /usr/bin/nginx
-
     rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
     cat > ${install_path}/${file_name}/bin/nginx.service << EOF
 #!/bin/sh
 # chkconfig: - 85 15
-# description: nginx is a World Wide Web server. It is used to serve.
+# description: Nginx is a World Wide Web server. It is used to serve.
 # author: godcheese [godcheese@outlook.com]
-
 bin_path=
 if test -z "\${bin_path}" ; then
     bin_path="/usr/bin/nginx"
@@ -192,28 +198,57 @@ if ! test -r "\${bin_path}" ; then
     exit 0
 fi
 case "\$1" in
+    "status")
+        result=\$(ps -ef | grep nginx | grep -v grep)
+        if [[ \${result} =~ "00:00:00 nginx" ]]; then
+            echo "Nginx is running."
+        else
+            echo "Nginx is not running."
+        fi
+        ;;
     "start")
-        echo "Starting nginx"
-        "\${bin_path}"
-        echo "Nginx start successful"
+        result=\$(ps -ef | grep nginx | grep -v grep)
+        if [[ \${result} =~ "00:00:00 nginx" ]]; then
+            echo "Nginx is running."
+        else
+            echo "Starting nginx..."
+            "\${bin_path}"
+            echo "Nginx start successful."
+        fi
         ;;
     "stop")
-        echo "Stopping nginx"
-        "\${bin_path}" -s stop
-        echo "Nginx stop successful"
+        result=\$(ps -ef | grep nginx | grep -v grep)
+        if [[ \${result} =~ "00:00:00 nginx" ]]; then
+            echo "Stopping nginx..."
+            "\${bin_path}" -s stop
+            echo "Nginx stop successful."
+        else
+            echo "Nginx is not running."
+        fi
         ;;
     "restart")
-        echo "Restarting nginx"
-        "\${bin_path}" -s reload
-        echo "Nginx restart successful"
+        result=\$(ps -ef | grep nginx | grep -v grep)
+        echo "Restarting nginx..."
+        if [[ \${result} =~ "00:00:00 nginx" ]]; then
+            "\${bin_path}" -s reload
+        else
+            "\${bin_path}"
+            "\${bin_path}" -s reload
+        fi
+        echo "Nginx restart successful."
+        ;;
+    "test")
+        echo "Testing nginx conf..."
+        "\${bin_path}" -t
+        echo "Nginx conf test successful."
         ;;
 esac
 EOF
 
+    rm -rf /etc/init.d/nginx
     \cp -rf ${install_path}/${file_name}/bin/nginx.service /etc/init.d/nginx
     chmod 755 /etc/init.d/nginx
     chkconfig --add nginx && chkconfig nginx on
-
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
     sudo echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
@@ -225,7 +260,7 @@ EOF
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
-    service nginx start
+    service nginx restart
     version=$(nginx -v 2>&1 | sed '1!d' | sed -e 's/"//g' -e 's/version//')
     if [[ ! $? == 0 ]]; then
 	    echo -e "\033[31m
@@ -233,11 +268,11 @@ EOF
         \033[0m"
 	    exit 0
     else
-        firewall-cmd --zone=public --add-service=http --permanent
-        firewall-cmd --zone=public --add-service=https --permanent
-        firewall-cmd --zone=public --add-port=80/tcp --permanent
-        firewall-cmd --zone=public --add-port=443/tcp --permanent
-        firewall-cmd --reload
+        firewall-cmd --zone=public --add-service=http --permanent > /dev/null
+        firewall-cmd --zone=public --add-service=https --permanent > /dev/null
+        firewall-cmd --zone=public --add-port=80/tcp --permanent > /dev/null
+        firewall-cmd --zone=public --add-port=443/tcp --permanent > /dev/null
+        firewall-cmd --reload > /dev/null
         echo -e "\033[32m
         Nginx 安装成功！
         \033[0m"
@@ -246,9 +281,11 @@ EOF
         - Nginx 安装路径：${install_path}/${file_name}/bin
         - Nginx 配置文件路径：${install_path}/${file_name}/bin/conf/nginx.conf
         - Nginx 常用命令：
+          状态：service nginx status
           启动：service nginx start
           停止：service nginx stop
           重启：service nginx restart
+          测试配置文件语法：service nginx test
         \033[0m"
         exit 0
     fi
@@ -260,7 +297,6 @@ function install_mysql() {
 	    service mysql stop
 	    rm -rf /var/lock/subsys/mysql
 	fi
-
     install_path=$1
     download_url=$2
     file_name=$3
@@ -272,6 +308,9 @@ function install_mysql() {
     tar -zxvf ${base_file_name} -C ${install_path}
     mkdir -p ${install_path}/${file_name}/data
     mkdir -p ${install_path}/${file_name}/log
+    if test -z /etc/init.d/mysql; then
+        service mysql stop
+    fi
     rm -rf /etc/init.d/mysql
     \cp -rf ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
     chkconfig --add mysql && chkconfig mysql on

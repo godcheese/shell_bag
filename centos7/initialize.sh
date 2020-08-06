@@ -1,7 +1,9 @@
 
+
 mv /etc/yum.repos.d/Centos-Base.repo /etc/yum.repos.d/Centos-Base.repo.bak
 wget -O CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 yum clean all
+yum update
 yum install -y wget
 yum install -y net-tools
 yum install -y lsof
@@ -13,4 +15,3 @@ perl -v
 yum install -y "kernel-devel-$(uname -r)"
 yum install -y epel-release
 yum install -y dkms
-
