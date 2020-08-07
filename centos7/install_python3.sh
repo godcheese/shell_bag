@@ -3,7 +3,7 @@
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
-# description: Auto install Python 3.x
+# description: Install Python 3.x
 
 # install python3
 function install_python3() {

@@ -3,7 +3,7 @@
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
-# description: Auto install Oracle 11G r2
+# description: Install Oracle 11G r2
 
 # install oracle11gr2
 function install_oracle11gr2() {

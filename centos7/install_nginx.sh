@@ -3,7 +3,7 @@
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
-# description: Auto install Nginx
+# description: Install Nginx
 
 # install nginx
 function install_nginx() {

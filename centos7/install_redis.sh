@@ -3,7 +3,7 @@
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
-# description: Auto install Redis
+# description: Install Redis
 
 # install redis
 function install_redis() {
@@ -17,7 +17,7 @@ function install_redis() {
 #         fi
 #     fi
     current_path=$(pwd)
-    yum install -y gcc make
+    yum install -y gcc gcc++ make
 #     yum install -y centos-release-scl
 #     yum install -y devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
 #     scl enable devtoolset-9 bash
@@ -109,10 +109,10 @@ function show_banner() {
 show_banner
 case "$1" in
     "install")
-        install_python3 $2 $3 $4
+        install_redis $2 $3 $4
         ;;
     "uninstall")
-        uninstall_python3 $2 $3 $4
+        uninstall_redis $2 $3 $4
         ;;
     *)
         echo "请输入正确的命令"

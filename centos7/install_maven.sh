@@ -3,7 +3,7 @@
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
-# description: Auto install Maven
+# description: Install Maven
 
 # install maven
 function install_maven() {

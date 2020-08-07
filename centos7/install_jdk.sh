@@ -3,7 +3,7 @@
 
 # http://github.com/godcheese/shell_bag
 # author: godcheese [godcheese@outlook.com]
-# description: Auto install JDK
+# description: Install JDK
 
 # install jdk
 function install_jdk() {
