@@ -21,7 +21,7 @@ function install_mysql() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -39,11 +39,11 @@ function install_mysql() {
     ln -fs ${install_path}/${file_name}/bin/myisamchk /usr/local/bin/myisamchk
     ln -fs ${install_path}/${file_name}/bin/mysqld_safe /usr/local/bin/mysqld_safe
 
-    sudo touch ${install_path}/${file_name}/mysql.sock
-    sudo touch ${install_path}/${file_name}/mysql.pid
-    sudo touch ${install_path}/${file_name}/log/mysql-error.log
+    touch ${install_path}/${file_name}/mysql.sock
+    touch ${install_path}/${file_name}/mysql.pid
+    touch ${install_path}/${file_name}/log/mysql-error.log
 
-    rm -rf /etc/my.cnf && sudo touch /etc/my.cnf
+    rm -rf /etc/my.cnf && touch /etc/my.cnf
     cat > /etc/my.cnf << EOF
 [client]
 socket=${install_path}/${file_name}/mysql.sock
@@ -62,9 +62,9 @@ EOF
 
     sed -i "/# Made for MySQL/d" /etc/profile
     sed -i "/MYSQL_HOME/d" /etc/profile
-    sudo echo "# Made for MySQL env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export MYSQL_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${MYSQL_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for MySQL env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export MYSQL_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${MYSQL_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
