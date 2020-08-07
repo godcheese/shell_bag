@@ -26,8 +26,8 @@ function install_mysql() {
     mysql_path=${webwork_path}${webserver_path}/mysql
     install_version=mysql57
     install_path=${mysql_path}/${install_version}
-    sudo mkdir -p ${mysql_path}/data/${install_version}
-    sudo mkdir -p ${mysql_path}/log
+    mkdir -p ${mysql_path}/data/${install_version}
+    mkdir -p ${mysql_path}/log
     curl -o ${install_path}.tar.gz ${download_url}
     tar -zxvf ${install_path}.tar.gz
     mv -f ${download_version}/* ${install_path}
@@ -61,10 +61,10 @@ pid-file=${mysql_path}/${install_version}.pid
 !includedir /etc/my.cnf.d
 EOF
 
-    sudo echo " " >> /etc/profile
-    sudo echo "# Made for mysql env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export MYSQL_HOME=${install_path}" >> /etc/profile
-    sudo echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile
+    echo " " >> /etc/profile
+    echo "# Made for mysql env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export MYSQL_HOME=${install_path}" >> /etc/profile
+    echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile
     tail -4 /etc/profile
     source /etc/profile
 

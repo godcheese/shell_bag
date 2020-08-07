@@ -16,7 +16,7 @@ function install_python3() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -31,9 +31,9 @@ function install_python3() {
     ln -fs ${install_path}/${file_name}/bin/pip3 /usr/local/bin/pip3
     sed -i "/# Made for Python/d" /etc/profile
     sed -i "/PYTHON_HOME/d" /etc/profile
-    sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m

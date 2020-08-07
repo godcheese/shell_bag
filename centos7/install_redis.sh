@@ -28,7 +28,7 @@ function install_redis() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -49,7 +49,7 @@ function install_redis() {
     rm -rf /usr/local/bin/redis-cli
     ln -fs ${install_path}/${file_name}/src/redis-server /usr/local/bin/redis-server
     ln -fs ${install_path}/${file_name}}/src/redis-cli /usr/local/bin/redis-cli
-#     rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
+#     rm -rf ${install_path}/${file_name}/bin/nginx.service && touch ${install_path}/${file_name}/bin/nginx.service
 
 #     rm -rf /etc/init.d/nginx
 #     \cp -rf ${install_path}/${file_name}/bin/nginx.service /etc/init.d/nginx
@@ -59,9 +59,9 @@ function install_redis() {
     ${install_path}/${file_name}/utils/install_server.sh
     sed -i "/# Made for Redis/d" /etc/profile
     sed -i "/REDIS_HOME/d" /etc/profile
-    sudo echo "# Made for Redis env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export REDIS_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${REDIS_HOME}/src:\${PATH}\"" >> /etc/profile
+    echo "# Made for Redis env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export REDIS_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${REDIS_HOME}/src:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m

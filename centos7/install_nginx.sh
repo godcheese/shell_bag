@@ -22,7 +22,7 @@ function install_nginx() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -39,7 +39,7 @@ function install_nginx() {
     fi
     rm -rf /usr/local/bin/nginx
     ln -fs ${install_path}/${file_name}/bin/nginx /usr/local/bin/nginx
-    rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
+    rm -rf ${install_path}/${file_name}/bin/nginx.service && touch ${install_path}/${file_name}/bin/nginx.service
     cat > ${install_path}/${file_name}/bin/nginx.service << EOF
 #!/bin/sh
 # chkconfig: - 85 15
@@ -107,9 +107,9 @@ EOF
     chkconfig --add nginx && chkconfig nginx on
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
-    sudo echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export NGINX_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${NGINX_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export NGINX_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${NGINX_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -155,7 +155,7 @@ function install_maven() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -163,9 +163,9 @@ function install_maven() {
     ln -fs ${install_path}/${file_name}/bin/mvn /usr/local/bin/mvn
     sed -i "/# Made for Maven/d" /etc/profile
     sed -i "/MAVEN_HOME/d" /etc/profile
-    sudo echo "# Made for Maven env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export MAVEN_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${MAVEN_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for Maven env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export MAVEN_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${MAVEN_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m

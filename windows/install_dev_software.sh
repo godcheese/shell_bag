@@ -20,7 +20,7 @@ function install_jdk() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -37,12 +37,12 @@ function install_jdk() {
     sed -i '/^export CLASSPATH/d' /etc/profile
     sed -i '/^export CLASSPATH/d' /etc/profile
     sed -i '/^export PATH$/d' /etc/profile
-    sudo echo " " >> /etc/profile
-    sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
-    sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
-    sudo echo "PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
-    sudo echo "export PATH" >> /etc/profile
+    echo " " >> /etc/profile
+    echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
+    echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
+    echo "PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
+    echo "export PATH" >> /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
     写入 /etc/profile 的环境变量内容：
@@ -73,7 +73,7 @@ function install_python() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -90,12 +90,12 @@ function install_python() {
     sed -i '/^export CLASSPATH/d' /etc/profile
     sed -i '/^export CLASSPATH/d' /etc/profile
     sed -i '/^export PATH$/d' /etc/profile
-    sudo echo " " >> /etc/profile
-    sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
-    sudo echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
-    sudo echo "PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
-    sudo echo "export PATH" >> /etc/profile
+    echo " " >> /etc/profile
+    echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export JAVA_HOME=${install_path}/${file_name}" >> /etc/profile
+    echo "export CLASSPATH=.:\$JAVA_HOME/jre/lib/rt.jar:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar" >> /etc/profile
+    echo "PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
+    echo "export PATH" >> /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
     写入 /etc/profile 的环境变量内容：

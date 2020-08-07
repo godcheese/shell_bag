@@ -31,7 +31,7 @@ function install_redis() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -52,7 +52,7 @@ function install_redis() {
     rm -rf /usr/local/bin/redis-cli
     ln -fs ${install_path}/${file_name}/src/redis-server /usr/local/bin/redis-server
     ln -fs ${install_path}/${file_name}}/src/redis-cli /usr/local/bin/redis-cli
-#     rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
+#     rm -rf ${install_path}/${file_name}/bin/nginx.service && touch ${install_path}/${file_name}/bin/nginx.service
 
 #     rm -rf /etc/init.d/nginx
 #     \cp -rf ${install_path}/${file_name}/bin/nginx.service /etc/init.d/nginx
@@ -62,9 +62,9 @@ function install_redis() {
     ${install_path}/${file_name}/utils/install_server.sh
     sed -i "/# Made for Redis/d" /etc/profile
     sed -i "/REDIS_HOME/d" /etc/profile
-    sudo echo "# Made for Redis env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export REDIS_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${REDIS_HOME}/src:\${PATH}\"" >> /etc/profile
+    echo "# Made for Redis env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export REDIS_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${REDIS_HOME}/src:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -112,7 +112,7 @@ function install_mysql() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -130,11 +130,11 @@ function install_mysql() {
     ln -fs ${install_path}/${file_name}/bin/myisamchk /usr/local/bin/myisamchk
     ln -fs ${install_path}/${file_name}/bin/mysqld_safe /usr/local/bin/mysqld_safe
 
-    sudo touch ${install_path}/${file_name}/mysql.sock
-    sudo touch ${install_path}/${file_name}/mysql.pid
-    sudo touch ${install_path}/${file_name}/log/mysql-error.log
+    touch ${install_path}/${file_name}/mysql.sock
+    touch ${install_path}/${file_name}/mysql.pid
+    touch ${install_path}/${file_name}/log/mysql-error.log
 
-    rm -rf /etc/my.cnf && sudo touch /etc/my.cnf
+    rm -rf /etc/my.cnf && touch /etc/my.cnf
     cat > /etc/my.cnf << EOF
 [client]
 socket=${install_path}/${file_name}/mysql.sock
@@ -153,9 +153,9 @@ EOF
 
     sed -i "/# Made for MySQL/d" /etc/profile
     sed -i "/MYSQL_HOME/d" /etc/profile
-    sudo echo "# Made for MySQL env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export MYSQL_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${MYSQL_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for MySQL env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export MYSQL_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${MYSQL_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -212,7 +212,7 @@ function install_nginx() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -229,7 +229,7 @@ function install_nginx() {
     fi
     rm -rf /usr/local/bin/nginx
     ln -fs ${install_path}/${file_name}/bin/nginx /usr/local/bin/nginx
-    rm -rf ${install_path}/${file_name}/bin/nginx.service && sudo touch ${install_path}/${file_name}/bin/nginx.service
+    rm -rf ${install_path}/${file_name}/bin/nginx.service && touch ${install_path}/${file_name}/bin/nginx.service
     cat > ${install_path}/${file_name}/bin/nginx.service << EOF
 #!/bin/sh
 # chkconfig: - 85 15
@@ -297,9 +297,9 @@ EOF
     chkconfig --add nginx && chkconfig nginx on
     sed -i "/# Made for Nginx/d" /etc/profile
     sed -i "/NGINX_HOME/d" /etc/profile
-    sudo echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export NGINX_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${NGINX_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for Nginx env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export NGINX_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${NGINX_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -345,7 +345,7 @@ function install_maven() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -353,9 +353,9 @@ function install_maven() {
     ln -fs ${install_path}/${file_name}/bin/mvn /usr/local/bin/mvn
     sed -i "/# Made for Maven/d" /etc/profile
     sed -i "/MAVEN_HOME/d" /etc/profile
-    sudo echo "# Made for Maven env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export MAVEN_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${MAVEN_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for Maven env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export MAVEN_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${MAVEN_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -390,7 +390,7 @@ function install_python3() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -405,9 +405,9 @@ function install_python3() {
     ln -fs ${install_path}/${file_name}/bin/pip3 /usr/local/bin/pip3
     sed -i "/# Made for Python/d" /etc/profile
     sed -i "/PYTHON_HOME/d" /etc/profile
-    sudo echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
@@ -441,7 +441,7 @@ function install_jdk() {
     file_name=$3
     base_file_name=$(basename ${download_url})
     if [[ ${download_url} =~ ^http.* ]]; then
-        sudo curl -o ${base_file_name} ${download_url}
+        curl -o ${base_file_name} ${download_url}
     fi
     rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
     tar -zxvf ${base_file_name} -C ${install_path}
@@ -454,10 +454,10 @@ function install_jdk() {
     sed -i "/# Made for JDK/d" /etc/profile
     sed -i "/JAVA_HOME/d" /etc/profile
     sed -i "/CLASSPATH/d" /etc/profile
-    sudo echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-    sudo echo "export JAVA_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-    sudo echo "export CLASSPATH=\".:\${JAVA_HOME}jre/lib/rt.jar:\${JAVA_HOME}/lib/dt.jar:\${JAVA_HOME}/lib/tools.jar\"" >> /etc/profile
-    sudo echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >> /etc/profile
+    echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
+    echo "export JAVA_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
+    echo "export CLASSPATH=\".:\${JAVA_HOME}jre/lib/rt.jar:\${JAVA_HOME}/lib/dt.jar:\${JAVA_HOME}/lib/tools.jar\"" >> /etc/profile
+    echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >> /etc/profile
     source /etc/profile
     profile=$(tail -4 /etc/profile)
     echo -e "\033[32m
