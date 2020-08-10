@@ -5,7 +5,6 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install JDK
 
-
 system_release=
 system_version=
 
@@ -30,10 +29,10 @@ function install_jdk() {
   sed -i "/# Made for JDK/d" /etc/profile
   sed -i "/JAVA_HOME/d" /etc/profile
   sed -i "/CLASSPATH/d" /etc/profile
-  echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >> /etc/profile
-  echo "export JAVA_HOME=\"${install_path}/${file_name}\"" >> /etc/profile
-  echo "export CLASSPATH=\".:\${JAVA_HOME}jre/lib/rt.jar:\${JAVA_HOME}/lib/dt.jar:\${JAVA_HOME}/lib/tools.jar\"" >> /etc/profile
-  echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >> /etc/profile
+  echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >>/etc/profile
+  echo "export JAVA_HOME=\"${install_path}/${file_name}\"" >>/etc/profile
+  echo "export CLASSPATH=\".:\${JAVA_HOME}jre/lib/rt.jar:\${JAVA_HOME}/lib/dt.jar:\${JAVA_HOME}/lib/tools.jar\"" >>/etc/profile
+  echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -4 /etc/profile)
   echo -e "\033[32m
@@ -42,10 +41,10 @@ function install_jdk() {
   \033[0m"
   version=$(java -version 2>&1)
   if [[ ! $? == 0 ]]; then
-	  echo -e "\033[31m
+    echo -e "\033[31m
     JDK 安装失败！
     \033[0m"
-	  exit 0
+    exit 0
   else
     echo -e "\033[32m
     JDK 安装成功！
@@ -57,53 +56,6 @@ function install_jdk() {
     exit 0
   fi
 }
-
-#$(cat /etc/*-release > /dev/null 2>&1)
-#$(cat /etc/*-release 2>&1 )
-#cat /etc/issue
-#lsb_release -a
-#uname -a
-#uname -mrs
-#man uname
-#cat /proc/version
-#cat /etc/*-release | awk -F 'VERSION_ID' '{print $1}' | wc -c
-
-function system_info() {
-release_name=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
-release_version=$(awk '/^VERSION="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' 2>&1)
-release_full_version=
-linux_kernel=$(uname -srm | awk -F ' ' '{print $2}' | awk -F '-' '{print $1}' 2>&1)
-case "${release_name}" in
-    "centos")
-        release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}')
-        ;;
-    "debian")
-        release_full_version=$(cat /etc/debian_version)
-        ;;
-    *)
-        echo "请输入正确的命令"
-        exit 0
-        ;;
-esac
-echo "${release_name}"
-echo "${release_version}"
-echo "${release_full_version}"
-echo "${linux_kernel}"
-}
-system_info
-
-
-
-[chengmo@localhost ~]$ awk 'BEGIN{start=match("this is a test",/[a-z]+$/); print start, RSTART, RLENGTH }'
-11 11 4
-[chengmo@localhost ~]$ awk 'BEGIN{start=match("this is a test",/^[a-z]+$/); print start, RSTART, RLENGTH }'
-0 0 –1
-
-
-releasetmp=`cat /etc/redhat-release | awk '{match($0,"release ") print substr($0,RSTART+RLENGTH)}' | awk -F '.' '{print $1}'` && echo $releasetmp
-
-
-
 
 # show banner
 function show_banner() {
@@ -118,14 +70,14 @@ function show_banner() {
 
 show_banner
 case "$1" in
-  "install")
-    install_jdk $2 $3 $4
-    ;;
-  "uninstall")
-    uninstall_jdk $2 $3 $4
-    ;;
-  *)
-    echo "请输入正确的命令"
-    exit 0
-    ;;
+"install")
+  install_jdk $2 $3 $4
+  ;;
+"uninstall")
+  uninstall_jdk $2 $3 $4
+  ;;
+*)
+  echo "请输入正确的命令"
+  exit 0
+  ;;
 esac
