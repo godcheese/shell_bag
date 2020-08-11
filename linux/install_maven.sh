@@ -52,7 +52,7 @@ function install_maven() {
 function show_banner() {
    echo -e "\033[32m
     -------------------------------------------------
-    | Install for CentOS                            |
+    | Install for Linux                             |
     | http://github.com/godcheese/shell_bag         |
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------

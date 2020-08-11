@@ -19,8 +19,9 @@ yum install -y dkms
 
 
 # debian 10
+# 安装 SSH 服务
 sudo apt-get update
-sudo apt-get vim
+sudo apt-get install -y vim
 sudo apt-get install -y ssh
 sed -i "s/^#PasswordAuthentication yes/PasswordAuthentication yes/g" /etc/ssh/sshd_config
 sed -i "s/^PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
@@ -31,8 +32,8 @@ service ssh status
 
 
 # ubuntu 16.04
+# 安装 SSH 服务
 sudo apt-get update
-sudo apt-get vim
 sudo apt-get install -y ssh
 sed -i "s/^#PasswordAuthentication yes/PasswordAuthentication yes/g" /etc/ssh/sshd_config
 sed -i "s/^PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
@@ -40,6 +41,9 @@ sed -i "s/^#PermitRootLogin prohibit-password/PermitRootLogin yes/g" /etc/ssh/ss
 sed -i "s/^PermitRootLogin prohibit-password/PermitRootLogin yes/g" /etc/ssh/sshd_config
 service ssh start
 service ssh status
+
+# 安装 SFTP 服务
+#sudo apt-get install -y open-sshserver
 
 
 

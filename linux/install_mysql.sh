@@ -5,6 +5,9 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install MySQL
 
+
+#https://cdn.mysql.com//Downloads/MySQL-5.7/mysql-server_5.7.31-1ubuntu16.04_amd64.deb-bundle.tar
+
 release_name=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
 release_version=$(awk '/^VERSION="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' 2>&1)
 release_full_version=
@@ -132,7 +135,7 @@ EOF
 function show_banner() {
   echo -e "\033[32m
     -------------------------------------------------
-    | Install for CentOS                            |
+    | Install for Linux                             |
     | http://github.com/godcheese/shell_bag         |
     | author: godcheese [godcheese@outlook.com]     |
     -------------------------------------------------

@@ -5,9 +5,6 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install JDK
 
-system_release=
-system_version=
-
 # install jdk
 function install_jdk() {
   echo "Installing JDK..."
@@ -61,7 +58,7 @@ function install_jdk() {
 function show_banner() {
   echo -e "\033[32m
   -------------------------------------------------
-  | Install for Linux                            |
+  | Install for Linux                             |
   | http://github.com/godcheese/shell_bag         |
   | author: godcheese [godcheese@outlook.com]     |
   -------------------------------------------------
