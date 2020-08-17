@@ -28,6 +28,7 @@ function install_nginx() {
     tar -zxvf ${base_file_name} -C ${install_path}
     cd ${install_path}/${file_name}
     ./configure --prefix=${install_path}/${file_name}/bin  --sbin-path=nginx --conf-path=${install_path}/${file_name}/bin/conf/nginx.conf --pid-path=${install_path}/${file_name}/bin/logs/nginx.pid
+    cd src
     make distclean
     make && make install
     cd ${current_path}

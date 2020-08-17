@@ -26,7 +26,7 @@
 > install_nginx.sh
 - CentOS/Ubuntu/Debian
   - Online install: curl -o install.sh https://raw.githubusercontent.com/godcheese/shell_bag/master/linux/install_nginx.sh && bash install.sh install /webwork/software/nginx http://nginx.org/download/nginx-1.18.0.tar.gz nginx-1.18.0
-  - Offline install: curl -o install.sh https://raw.githubusercontent.com/godcheese/shell_bag/master/linux/install_nginx.sh && bash install.sh install /webwork/software/maven apache-maven-3.6.3-bin.tar.gz apache-maven-3.6.3
+  - Offline install: curl -o install.sh https://raw.githubusercontent.com/godcheese/shell_bag/master/linux/install_nginx.sh && bash install.sh install /webwork/software/nginx nginx-1.18.0.tar.gz nginx-1.18.0
 
 ### Oracle 11G r2
 > install_oracle11gr2.sh
