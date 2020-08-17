@@ -59,9 +59,7 @@ function install_mysql() {
   mkdir -p ${install_path}/${file_name}/log
   rm -rf /etc/init.d/mysql
   \cp -rf ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
-  if [[ "${release_id}"x == "ubuntu"x ]]; then
-    echo "ubuntu"
-  else
+  if [[ "${release_id}"x != "ubuntu"x ]]; then
     chkconfig --add mysql && chkconfig mysql on
   fi
   rm -rf /usr/local/bin/mysql
