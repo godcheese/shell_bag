@@ -5,22 +5,24 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install MySQL
 
-
-#https://cdn.mysql.com//Downloads/MySQL-5.7/mysql-server_5.7.31-1ubuntu16.04_amd64.deb-bundle.tar
-
-release_name=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
+# get_system_info
+release_id=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
+release_name=
 release_version=$(awk '/^VERSION="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' 2>&1)
 release_full_version=
 linux_kernel=$(uname -srm | awk -F ' ' '{print $2}' | awk -F '-' '{print $1}' 2>&1)
-function system_info() {
-  case "${release_name}" in
+function get_system_info() {
+  case "${release_id}" in
   "centos")
+    release_name="CentOS"
     release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
     ;;
   "debian")
+    release_name="Debian"
     release_full_version=$(cat /etc/debian_version 2>&1)
     ;;
   "ubuntu")
+    release_name="Ubuntu"
     release_full_version=${release_version}
     release_version=$(echo ${release_version} | awk -F '.' '{print $1}')
     ;;
@@ -30,17 +32,19 @@ function system_info() {
     ;;
   esac
 }
-system_info
+get_system_info
 
-# install mysql
+# install_mysql
 function install_mysql() {
   echo "Installing MySQL..."
+  if [[ "${release_id}"x == "ubuntu"x ]]; then
+    apt-get install update
+    apt-get install -y libaio-dev
+  fi
   if test -r /etc/init.d/mysql; then
-    service mysql status
-    if [[ ! $? == 1 ]]; then
-      service mysql stop
-      rm -rf /var/lock/subsys/mysql
-    fi
+    systemctl disable mysql.service >/dev/null
+    service mysql stop >/dev/null
+    rm -rf /var/lock/subsys/mysql
   fi
   install_path=$1
   download_url=$2
@@ -55,7 +59,11 @@ function install_mysql() {
   mkdir -p ${install_path}/${file_name}/log
   rm -rf /etc/init.d/mysql
   \cp -rf ${install_path}/${file_name}/support-files/mysql.server /etc/init.d/mysql
-  chkconfig --add mysql && chkconfig mysql on
+  if [[ "${release_id}"x == "ubuntu"x ]]; then
+    echo "ubuntu"
+  else
+    chkconfig --add mysql && chkconfig mysql on
+  fi
   rm -rf /usr/local/bin/mysql
   rm -rf /usr/local/bin/mysqldump
   rm -rf /usr/local/bin/myisamchk
@@ -69,6 +77,7 @@ function install_mysql() {
   touch ${install_path}/${file_name}/mysql.pid
   touch ${install_path}/${file_name}/log/mysql-error.log
 
+  rm -rf /etc/my.cnf.d && mkdir -p /etc/my.cnf.d
   rm -rf /etc/my.cnf && touch /etc/my.cnf
   cat >/etc/my.cnf <<EOF
 [client]
@@ -100,6 +109,7 @@ EOF
   groupadd -f mysql && useradd -r -g mysql mysql -s /bin/false
   chown -R mysql ${install_path}/${file_name}
   ${install_path}/${file_name}/bin/mysqld --initialize-insecure --user=mysql
+  systemctl enable mysql.service
   service mysql restart
   ${install_path}/${file_name}/bin/mysqladmin -u root password "123456"
   version=$(mysql --version 2>&1)

@@ -12,7 +12,7 @@ function install_nginx() {
         service nginx stop
     else
         if test -r /usr/local/bin/nginx; then
-            nginx -s stop
+            nginx -s stop >/dev/null
         fi
     fi
     current_path=$(pwd)
