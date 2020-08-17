@@ -8,6 +8,14 @@
 # install nginx
 function install_nginx() {
   echo "Installing Nginx..."
+  if [[ "${release_id}"x == "centos"x ]]; then
+    yum update
+    yum install -y gcc zlib* pcre-devel make
+  fi
+  if [[ "${release_id}"x == "ubuntu"x ]]; then
+    apt-get update
+    apt-get -y gcc zlib* pcre-devel make
+  fi
   if test -r /etc/init.d/nginx; then
     service nginx stop
   else
@@ -16,7 +24,6 @@ function install_nginx() {
     fi
   fi
   current_path=$(pwd)
-  yum install -y gcc zlib* pcre-devel make
   install_path=$1
   download_url=$2
   file_name=$3
