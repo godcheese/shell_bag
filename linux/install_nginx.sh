@@ -5,6 +5,35 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install Nginx
 
+# get_system_info
+release_id=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
+release_name=
+release_version=$(awk '/^VERSION="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' 2>&1)
+release_full_version=
+linux_kernel=$(uname -srm | awk -F ' ' '{print $2}' | awk -F '-' '{print $1}' 2>&1)
+function get_system_info() {
+  case "${release_id}" in
+  "centos")
+    release_name="CentOS"
+    release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
+    ;;
+  "debian")
+    release_name="Debian"
+    release_full_version=$(cat /etc/debian_version 2>&1)
+    ;;
+  "ubuntu")
+    release_name="Ubuntu"
+    release_full_version=${release_version}
+    release_version=$(echo ${release_version} | awk -F '.' '{print $1}')
+    ;;
+  *)
+    echo "Unknown system."
+    exit 0
+    ;;
+  esac
+}
+get_system_info
+
 # install nginx
 function install_nginx() {
   echo "Installing Nginx..."
@@ -12,12 +41,9 @@ function install_nginx() {
     yum update
     yum install -y gcc zlib* pcre-devel make
   fi
-  if [[ "${release_id}"x == "ubuntu"x ]]; then
-    apt-get update
-    apt-get -y gcc zlib* pcre-devel make
-  fi
   if test -r /etc/init.d/nginx; then
-    service nginx stop
+    systemctl disable nginx >/dev/null
+    service nginx stop >/dev/null
   else
     if test -r /usr/local/bin/nginx; then
       nginx -s stop >/dev/null
@@ -35,8 +61,6 @@ function install_nginx() {
   tar -zxvf ${base_file_name} -C ${install_path}
   cd ${install_path}/${file_name}
   ./configure --prefix=${install_path}/${file_name}/bin --sbin-path=nginx --conf-path=${install_path}/${file_name}/bin/conf/nginx.conf --pid-path=${install_path}/${file_name}/bin/logs/nginx.pid
-  cd src
-  make distclean
   make && make install
   cd ${current_path}
   if test -r /usr/local/bin/nginx; then
@@ -126,6 +150,7 @@ EOF
     写入 /etc/profile 的环境变量内容：
     ${profile}
     \033[0m"
+  systemctl enable nginx
   service nginx restart
   version=$(nginx -v 2>&1)
   if [[ ! $? == 0 ]]; then

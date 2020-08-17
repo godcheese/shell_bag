@@ -42,7 +42,7 @@ function install_mysql() {
     apt-get install -y libaio-dev
   fi
   if test -r /etc/init.d/mysql; then
-    systemctl disable mysql.service >/dev/null
+    systemctl disable mysql >/dev/null
     service mysql stop >/dev/null
     rm -rf /var/lock/subsys/mysql
   fi
@@ -107,7 +107,7 @@ EOF
   groupadd -f mysql && useradd -r -g mysql mysql -s /bin/false
   chown -R mysql ${install_path}/${file_name}
   ${install_path}/${file_name}/bin/mysqld --initialize-insecure --user=mysql
-  systemctl enable mysql.service
+  systemctl enable mysql
   service mysql restart
   ${install_path}/${file_name}/bin/mysqladmin -u root password "123456"
   version=$(mysql --version 2>&1)
