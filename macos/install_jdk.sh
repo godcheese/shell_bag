@@ -5,13 +5,9 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install JDK
 
-error_echo(){ echo -e "\033[031;1m$(date +"%F %T")\tERROR\t$@\033[0m"; exit 1;}
-warn_echo() { echo -e "\033[033;1m$(date +"%F %T")\tWARN\t$@\033[0m"; }
-info_echo() { echo -e "\033[032;1m$(date +"%F %T")\tINFO\t$@\033[0m"; }
-
 # install jdk
 function install_jdk() {
-  info_echo "\nInstalling JDK..."
+  echo "Installing JDK..."
   install_path=$1
   download_url=$2
   file_name=$3
@@ -36,31 +32,37 @@ function install_jdk() {
   echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -4 /etc/profile)
-  warn_echo "
+  echo -e "\033[32m
   写入 /etc/profile 的环境变量内容：
-  ${profile}"
+  ${profile}
+  \033[0m"
   version=$(java -version 2>&1)
   if [[ ! $? == 0 ]]; then
-    error_echo "
-    JDK 安装失败！"
+    echo -e "\033[31m
+    JDK 安装失败！
+    \033[0m"
     exit 0
   else
-    info_echo "
+    echo -e "\033[32m
     JDK 安装成功！
+    \033[0m"
+    echo -e "\033[32m
     - JDK 版本：${version}
-    - JDK 安装路径：${install_path}/${file_name}"
+    - JDK 安装路径：${install_path}/${file_name}
+    \033[0m"
     exit 0
   fi
 }
 
 # show banner
 function show_banner() {
-  info_echo "
+  echo -e "\033[32m
   -------------------------------------------------
   | Install for Linux                             |
   | http://github.com/godcheese/shell_bag         |
   | author: godcheese [godcheese@outlook.com]     |
-  -------------------------------------------------"
+  -------------------------------------------------
+  \033[0m"
 }
 
 show_banner
@@ -72,7 +74,7 @@ case "$1" in
   uninstall_jdk $2 $3 $4
   ;;
 *)
-  warn_echo "\n请输入正确的命令"
+  echo "请输入正确的命令"
   exit 0
   ;;
 esac
