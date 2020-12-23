@@ -38,7 +38,7 @@ get_system_info
 function install_mysql() {
   echo "Installing MySQL..."
   if [[ "${release_id}"x == "ubuntu"x ]]; then
-    apt-get install update
+    apt-get install -y update
     apt-get install -y libaio-dev
   fi
   if test -r /etc/init.d/mysql; then
