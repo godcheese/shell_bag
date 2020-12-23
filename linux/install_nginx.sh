@@ -38,8 +38,12 @@ get_system_info
 function install_nginx() {
   echo "Installing Nginx..."
   if [[ "${release_id}"x == "centos"x ]]; then
-    yum update
+    yum -y update
     yum install -y gcc zlib* pcre-devel make
+  fi
+    if [[ "${release_id}"x == "ubuntu"x ]]; then
+    apt-get -y update
+    apt-get install -y gcc zlib* pcre-devel make
   fi
   if test -r /etc/init.d/nginx; then
     systemctl disable nginx >/dev/null
