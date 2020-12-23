@@ -41,9 +41,9 @@ function install_nginx() {
     yum -y update
     yum install -y gcc zlib* pcre-devel make
   fi
-    if [[ "${release_id}"x == "ubuntu"x ]]; then
+  if [[ "${release_id}"x == "ubuntu"x ]]; then
     apt-get -y update
-    apt-get install -y gcc zlib* pcre-devel make
+    apt-get install -y gcc build-essential libpcre3 libpcre3-dev
   fi
   if test -r /etc/init.d/nginx; then
     systemctl disable nginx >/dev/null
@@ -64,6 +64,13 @@ function install_nginx() {
   rm -rf ${install_path}/${file_name} && mkdir -p ${install_path}
   tar -zxvf ${base_file_name} -C ${install_path}
   cd ${install_path}/${file_name}
+   if [[ "${release_id}"x == "ubuntu"x ]]; then
+    curl -o zlib-1.2.11.tar.gz http://www.zlib.net/zlib-1.2.11.tar.gz
+    tar -zxvf zlib-1.2.11.tar.gz
+    cd zlib-1.2.11
+    ./configure
+    make && make install
+  fi
   ./configure --prefix=${install_path}/${file_name}/bin --sbin-path=nginx --conf-path=${install_path}/${file_name}/bin/conf/nginx.conf --pid-path=${install_path}/${file_name}/bin/logs/nginx.pid
   make && make install
   cd ${current_path}
