@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# encoding: utf-8.0
+# encoding: utf-8
 
 # CentOS 7 自动化安装 oracle 11g r2
+# 具体版本：Oracle Database 11g Enterprise Edition Release 11.2.0.1.0 - 64bit Production
 
 # 安装一些必要的软件
 # wget         下载用的
@@ -39,7 +40,7 @@ chown -R oracle:oinstall /u01/app/
 chmod -R 775 /u01/app/
 chmod a+wr /u01/tmp
 
-# 设置oracle用户密码 oracle是安装工具自己创建的,参考我之前讲的
+# 设置oracle用户密码 oracle是安装工具自己创建的,参考我之前讲的，比如：123456
 passwd oracle
 
 # 为oracle用户添加一些必要的环境
@@ -51,16 +52,16 @@ export TMP TMPDIR
 ORACLE_BASE=/u01/app/oracle
 ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1
 ORACLE_SID=orcl
+ORACLE_HOME_LISTNER=$ORACLE_HOME
 PATH=$ORACLE_HOME/bin:$PATH
-export ORACLE_BASE ORACLE_SID ORACLE_HOME PATH
+export ORACLE_BASE ORACLE_SID ORACLE_HOME ORACLE_HOME_LISTNER PATH
 EOF
 # 生效
-source .bash_profile
+source ~/.bash_profile
 
 # linux.x64_11gR2_database_2of2.zip
 # linux.x64_11gR2_database_1of2.zip 上传至/home/oracle/
-
-# 解压 解压后文件会在/home/oracle/database/
+# 解压 解压后文件会在 /home/oracle/database/
 unzip linux.x64_11gR2_database_1of2.zip
 unzip linux.x64_11gR2_database_2of2.zip
 
@@ -100,8 +101,8 @@ oracle.install.db.config.starterdb.memoryLimit=256
 # 是否安装学习的scott和hr(我就知道这两个)
 oracle.install.db.config.starterdb.installExampleSchemas=false
 oracle.install.db.config.starterdb.enableSecuritySettings=true
-# 密码全设置成oracle (安装时会提示，个人学习忽略)
-oracle.install.db.config.starterdb.password.ALL=oracle
+# 密码全设置成123456 (安装时会提示，个人学习忽略)
+oracle.install.db.config.starterdb.password.ALL=123456
 oracle.install.db.config.starterdb.control=DB_CONTROL
 oracle.install.db.config.starterdb.dbcontrol.enableEmailNotification=false
 oracle.install.db.config.starterdb.automatedBackup.enable=false
@@ -109,48 +110,103 @@ oracle.install.db.config.starterdb.storageType=FILE_SYSTEM_STORAGE
 oracle.install.db.config.starterdb.fileSystemStorage.dataLocation=/u01/app/oracle/oradata
 # true
 DECLINE_SECURITY_UPDATES=true
-# 修改完成保存|上传到/home/oracle/rsp
+# 修改完成保存上传到 /home/oracle/rsp
 
+# 切换成 oracle 用户
+su oracle
 
 # 安装
 # 会出现密码不规范的警告，忽略
 /home/oracle/database/runInstaller -silent -ignorePrereq  -responseFile /home/oracle/rsp/db_install.rsp
 
 # 查看安装过程 另开一个shell 稍等
-tail -f  /home/oracle/ora11g/oraInventory/logs/installActions2017-09-24_12-26-49PM.log
+tail -f /home/oracle/ora11g/oraInventory/logs/installActions2017-09-24_12-26-49PM.log
 
+# oracle 自带数据库命令行工具
+ln -s $ORACLE_HOME/bin/sqlplus /usr/bin
 
-# sqlplus 登录
+# 启动 oracle 数据库及实例 dbstart $ORACLE_HOME
+ln -s $ORACLE_HOME/bin/dbstart /usr/bin
+
+# 关闭 oracle 数据库及实例 dbshut $ORACLE_HOME
+ln -s $ORACLE_HOME/bin/dbshut /usr/bin
+
+# 启动监听器 lsnrctl start / lsnrctl stop / lsnrctl status
+ln -s $ORACLE_HOME/bin/lsnrctl /usr/bin
+
+# 切换 root 用户
+su root
+
+# 运行 oracle 安装目录下的 root.sh 文件，生成 /etc/oratab 文件
+bash $ORACLE_HOME/root.sh
+
+# 修改oracle服务启动配置
+vi /etc/oratab
+# 修改了/etc/oratab N->Y 所以启动服务也会同时启动实例
+# N的情况不会同时启动实例 sqlplus登录会提示 an idle instance
+# 用sqlplus 然后---> startup启动实例
+# 重启系统后用这个命令启动
+将
+orcl:/u01/app/oracle/product/11.2.0/dbhome_1:N
+改成
+orcl:/u01/app/oracle/product/11.2.0/dbhome_1:Y
+:wq!保存
+
+# 切换 oracle
+su oracle
+
+# 启动 oracle # 关闭实例：dbshut $ORACLE_HOME
+# dbstart dbshut 运行时报 ORACLE_HOME_LISTNER is not SET, unable to auto-start Oracle Net Listener 错误解决方法（也可忽略，手动运行 lsnrctl start 启动监听器）：
+# vi $ORACLE_HOME/bin/dbstart
+# 将 ORACLE_HOME_LISTNER=$1 替换成 ORACLE_HOME_LISTNER=$ORACLE_HOME
+# vi $ORACLE_HOME/bin/dbshut
+# 将 ORACLE_HOME_LISTNER=$1 替换成 ORACLE_HOME_LISTNER=$ORACLE_HOME
+dbstart $ORACLE_HOME
+
+# 启动监听器 关闭监听器：lsnrctl stop 查看监听器状态：lsnrctl status
+lsnrctl start
+
+# sqlplus sysdba 登录
 sqlplus / as sysdba
 
 # 查看状态
 select status from v$instance;
 
-# 查看1521端口
+# 启动实例 立即关闭实例：shutdown immediate
+startup
+
+# 退出 sqlplus
+exit
+
+# 切换 root 用户
+su root
+
+# 查看 1521 端口
 netstat -an|grep 1521
 
-# 防火墙 放行1521端口
+# 查看 oracle 进程
+ps -ef|grep ora_|grep -v grep
+
+# 查看 oracle 的监听进程
+ps -ef|grep tnslsnr|grep -v grep
+
+# 防火墙 放行 1521 端口（防火墙很可能开着的）
+# ORA-12541: TNS:no listener 报错请先检查防火墙是否开启或放行端口
 firewall-cmd --zone=public --add-port=1521/tcp --permanent
 # 重新加载防火墙规则
 firewall-cmd --reload
 
-# 修改oracle服务启动配置
-
-vi /etc/oratab
-# orcl:/u01/app/oracle/product/11.2.0/dbhome_1:Y
-# :wq保存
-
-[oracle]
-# 启动oracle
-# 因为修改了/etc/oratab  N->y 所以启动服务也会同时启动实例
-# N的情况不会同时启动实例 sqlplus登录会提示 an idle instance
-# 用sqlplus 然后---> startup启动实例
-# 重启系统后用这个命令启动
-dbstart $ORACLE_HOME
-# 关闭
-dbshut $ORACLE_HOME
-
 # 远程连接oracle
 sqlplus sys/oracle@192.168.100.131:1521/ORCL.LAN as sysdba
 conn sys/oracle@192.168.100.131:1521/ORCL.LAN as sysdba
-ORCL.LAN是服务名 不是sid
+
+# 用户 oracle/123456
+# sid：orcl
+# 服务名（Service Name）：orcl.lan
+
+# service name: orcl.lan
+# or sid: orcl
+# port: 1521
+# as sysdba
+# username: sys
+# password: 123456
