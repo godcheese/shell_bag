@@ -199,8 +199,6 @@ EOF
   rm -rf /etc/init.d/redis
   \cp -rf "${install_path}/${file_name}/bin/redis.service" /etc/init.d/redis
   chmod 755 /etc/init.d/redis
-  chkconfig --add redis && chkconfig redis on
-  service redis start
   sed -i 's@^protected-mode yes@protected-mode no@' "${redis_conf_file}"
   sed -i 's@^bind 127.0.0.1@# bind 127.0.0.1@' "${redis_conf_file}"
   sed -i 's@^# port 0@port '"${redis_port}"'@' "${redis_conf_file}"
@@ -208,6 +206,8 @@ EOF
   sed -i 's@pidfile /var/run/redis_6379.pid@pidfile '"${redis_pid_file}"'@' "${redis_conf_file}"
   sed -i 's@logfile ""@logfile '"${redis_log_file}"'@' "${redis_conf_file}"
   sed -i 's@dir ./@dir '"${redis_data}"'@' "${redis_conf_file}"
+  chkconfig --add redis && chkconfig redis on
+  service redis start
   sed -i "/^source \/opt\/rh\/devtoolset-9\/enable/d" /etc/profile
   source /etc/profile
   sed -i "/^# Made for Redis/d" /etc/profile
