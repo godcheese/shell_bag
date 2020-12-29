@@ -162,6 +162,10 @@ case "\$1" in
     "\${exec_file}" -t
     echo "Nginx conf test successful."
     ;;
+  *)
+    echo "Usage: {status|stop|restart|test}"
+    exit 1
+    ;;
 esac
 EOF
 

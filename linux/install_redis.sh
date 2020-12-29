@@ -193,6 +193,10 @@ case "\$1" in
     fi
     echo "Redis restart successful."
     ;;
+  *)
+    echo "Usage: {status|stop|restart}"
+    exit 1
+    ;;
 esac
 EOF
 
