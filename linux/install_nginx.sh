@@ -110,7 +110,7 @@ function install_nginx() {
 # description: It is used to serve.
 # author: godcheese [godcheese@outlook.com]
 
-exec_file="\${NGINX_HOME}/bin/nginx"
+exec_file="${install_path}/${file_name}/bin/nginx"
 if [ ! -r "\${exec_file}" ]; then
   exec_file=/usr/local/bin/nginx
 fi
