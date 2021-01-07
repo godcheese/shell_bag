@@ -40,7 +40,9 @@ chmod -R 775 /u01/app/
 chmod a+wr /u01/tmp
 
 # 设置oracle用户密码 oracle是安装工具自己创建的,参考我之前讲的
-passwd oracle
+#passwd oracle
+echo "123456" | passwd --stdin oracle
+
 
 # 为oracle用户添加一些必要的环境
 cat >> /home/oracle/.bash_profile <<EOF
@@ -61,8 +63,8 @@ source .bash_profile
 # linux.x64_11gR2_database_1of2.zip 上传至/home/oracle/
 
 # 解压 解压后文件会在/home/oracle/database/
-unzip linux.x64_11gR2_database_1of2.zip
-unzip linux.x64_11gR2_database_2of2.zip
+unzip linux.x64_11gR2_database_1of2.zip -d /home/oracle
+unzip linux.x64_11gR2_database_2of2.zip -d /home/oracle
 
 # 由于某些原因文件权限问题 运行这个命令(选)
 chown -R oracle:oinstall /home/oracle/database
@@ -114,7 +116,14 @@ DECLINE_SECURITY_UPDATES=true
 
 # 安装
 # 会出现密码不规范的警告，忽略
-/home/oracle/database/runInstaller -silent -ignorePrereq  -responseFile /home/oracle/rsp/db_install.rsp
+#/home/oracle/database/runInstaller -silent -ignorePrereq  -responseFile /home/oracle/rsp/db_install.rsp
+
+
+
+
+
+
+
 
 # 查看安装过程 另开一个shell 稍等
 tail -f  /home/oracle/ora11g/oraInventory/logs/installActions2017-09-24_12-26-49PM.log

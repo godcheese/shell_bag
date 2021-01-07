@@ -155,8 +155,8 @@ EOF
     echo_info "\nMySQL 安装成功！
 - MySQL 版本：${version}
 - MySQL 安装路径：${install_path}/${file_name}
-- MySQL数据保存路径：${mysql_data}
-- MySQL日志文件路径：${mysql_log_error_file%/*}
+- MySQL 数据保存路径：${mysql_data}
+- MySQL 日志文件路径：${mysql_log_error_file%/*}
 - MySQL 端口：${mysql_port}
 - root 密码：${mysql_password}
 - MySQL 常用命令：
