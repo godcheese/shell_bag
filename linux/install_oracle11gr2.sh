@@ -235,24 +235,13 @@ EOF
     exit 0
   fi
   su - oracle -c "dbstart ${oracle_home}"
-
-  #version=$(su - oracle -c "sqlplus -S '/ as sysdba' <<EOF
-  #set pagesize 0 feedback off verify off heading off echo off;
-  #select * from v\$version;
-  #exit;
-  #EOF"
-  #)
-  #echo $version
-  #
-  #version=$(sqlplus -S '/ as sysdba' <<EOF
-  #set pagesize 0 feedback off verify off heading off echo off;
-  #select * from v\$version;
-  #exit;
-  #EOF
-  #)
-  #echo $version
-  #
-
+  version=$(su - oracle -c "sqlplus -S '/ as sysdba' <<EOF
+  set pagesize 0 feedback off verify off heading off echo off;
+  select * from v\\\$version;
+  exit;
+  EOF"
+  )
+  echo $version
   if [ "$?" != 0 ]; then
     show_banner
     echo_error "\nOracle 11g R2 安装失败！"
