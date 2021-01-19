@@ -55,22 +55,47 @@ function install_oracle11g_r2() {
   # oracle 数据库全局密码，sys、system、sysdba 都用此密码
   oracle_password=123456
   # oracle 实例数据存储目录
-  oracle_data=/u01/app/oracle/oradata
-  oracle_base=/u01/app/oracle
-  oracle_home=/u01/app/oracle/product/11.2.0/dbhome_1
-  oracle_install_response_dir=/home/oracle/response
-  ora_inst_path=/etc/oraInst.loc
-  ora_inventory_path=/home/oracle/ora11g/oraInventory
-  app_dir=/u01/app
-  tmp_dir=/u01/tmp
-  bash_profile=/home/oracle/.bash_profile
+  oracle_base="/u01/app/oracle"
+  oracle_data="${oracle_base}/oradata"
+  oracle_home="/u01/app/oracle/product/11.2.0/dbhome_1"
+  oracle_install_response_dir="/home/oracle/response"
+  ora_inst_path="/etc/oraInst.loc"
+  ora_inventory_path="/home/oracle/ora11g/oraInventory"
+  app_dir="/u01/app"
+  tmp_dir="/u01/tmp"
+  bash_profile="/home/oracle/.bash_profile"
   # 安装文件解压到目录
-  unzip_dir=/home/oracle
+  unzip_dir="/home/oracle"
   # 单位：MB，最小 256MB，8G及以下系统建议 256MB
   oracle_memory_limit=256
-  override_install=$2
 
   echo_info "\nInstalling Oracle 11g R2..."
+  input="$1"
+  extract="$2"
+  output="$3"
+  replace="$4"
+  which=$(which dbstart 2>&1)
+  echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
+  if [ "$?" == 1 ]; then
+    if [ ! -z "${which}" ]; then
+      echo "You have installed: ${which}"
+      if [ -z "${replace}" ]; then
+        read -p "Do you want to overwrite the installation ?(no)": replace
+      fi
+      if [ -z "${replace}" ]; then
+        replace="no"
+      fi
+      replace=$(echo "${replace}" | tr [A-Z] [a-z])
+      if [[ "${replace}" =~ ^y|yes$ ]]; then
+        echo "Overwrite installation..."
+        rm -rf "${which}"
+      else
+        echo "Do not overwrite installation and exit."
+        exit 0
+      fi
+    fi
+  fi
+
   if [ "${release_id}"x == "centos"x ]; then
     yum update -y
     yum install -y wget unzip net-tools
@@ -128,12 +153,36 @@ EOF
   # 生效
   source "${bash_profile}"
 
-  # linux.x64_11gR2_database_2of2.zip
-  # linux.x64_11gR2_database_1of2.zip
   # 解压 解压后文件会在 ${unzip_dir}/database
   rm -rf "${unzip_dir}/database"
-  unzip linux.x64_11gR2_database_1of2.zip -d "${unzip_dir}"
-  unzip linux.x64_11gR2_database_2of2.zip -d "${unzip_dir}"
+
+  rm -rf "${output}" && mkdir -p "${output}"
+  if [[ "${input}" =~ "," ]]; then
+    file1=$(echo "${input}" | awk -F, '{print $1}')
+    file2=$(echo "${input}" | awk -F, '{print $2}')
+    if [[ "${file1}" =~ ^http.* ]]; then
+      base_filename=$(basename "${file1}")
+      curl -o "${base_filename}" "${input}"
+      unzip "${base_filename}" -d "${unzip_dir}"
+    else
+      unzip "${file1}" -d "${unzip_dir}"
+    fi
+    if [[ "${file1}" =~ ^http.* ]]; then
+      base_filename=$(basename "${file2}")
+      curl -o "${base_filename}" "${input}"
+      unzip "${base_filename}" -d "${unzip_dir}"
+    else
+      unzip "${file2}" -d "${unzip_dir}"
+    fi
+  else
+    base_filename=$(basename "${input}")
+    if [[ "${input}" =~ ^http.* ]]; then
+      curl -o "${base_filename}" "${input}"
+      unzip "${base_filename}" -d "${unzip_dir}"
+    else
+      unzip "${input}" -d "${unzip_dir}"
+    fi
+  fi
 
   # 由于某些原因文件权限问题 运行这个命令(选)
   chown -R oracle:oinstall "${unzip_dir}/database"
@@ -234,14 +283,14 @@ EOF
     echo_error "/nThere is something wrong with Oracle startup."
     exit 0
   fi
-  su - oracle -c "dbstart ${oracle_home}"
-  version=$(su - oracle -c "sqlplus -S '/ as sysdba' <<EOF
+#  su - oracle -c "dbstart ${oracle_home}"
+  version=$(
+    su - oracle -c "sqlplus -S '/ as sysdba' <<EOF
   set pagesize 0 feedback off verify off heading off echo off;
   select * from v\\\$version;
   exit;
-  EOF"
+EOF"
   )
-  echo $version
   if [ "$?" != 0 ]; then
     show_banner
     echo_error "\nOracle 11g R2 安装失败！"
@@ -290,16 +339,6 @@ EOF
   fi
 }
 
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
-}
-
 # kill_process
 function kill_process() {
   if [ $# -lt 1 ]; then
@@ -315,16 +354,64 @@ function kill_process() {
   done
 }
 
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+
 show_banner
 case "$1" in
 "install")
-  install_oracle11g_r2 "$2" "$3" "$4" "$5"
+  shift 1
+  usage="Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y"
+  while getopts "hi:e:o:r:" arg; do
+    case $arg in
+    i)
+      input="$OPTARG"
+      ;;
+    e)
+      extract="$OPTARG"
+      ;;
+    o)
+      output="$OPTARG"
+      ;;
+    r)
+      replace="$OPTARG"
+      ;;
+    h)
+      echo "${usage}"
+      exit 0
+      ;;
+    ?)
+      echo "${usage}"
+      exit 1
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  if [ -z "${input}" ] || [ -z "${extract}" ] || [ -z "${output}" ]; then
+    echo_error "\nInvalid argument."
+    echo "${usage}"
+    exit 1
+  fi
+  install_oracle11g_r2 "${input}" "${extract}" "${output}" "${replace}"
   ;;
 "uninstall")
-  install_oracle11g_r2 "$2" "$3" "$4" "$5"
+  shift 1
+  echo "Not yet developed."
   ;;
 *)
-  echo_error "\n请输入正确的命令"
+  echo_error "\n请输入正确的命令：\n install/uninstall"
   exit 1
   ;;
 esac

@@ -42,21 +42,51 @@ check_system
 # install_maven
 function install_maven() {
   echo_info "\nInstalling Maven..."
-  install_path="$1"
-  download_url="$2"
-  file_name="$3"
-  base_file_name=$(basename "${download_url}")
-  if "${download_url}" =~ ^http.*; then
-    curl -o "${base_file_name}" "${download_url}"
+  #  install_path="$1"
+  #  download_url="$2"
+  #  file_name="$3"
+  #  base_file_name=$(basename "${download_url}")
+  input="$1"
+  extract="$2"
+  output="$3"
+  replace="$4"
+  which=$(which mvn 2>&1)
+  echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
+  if [ "$?" == 1 ]; then
+    if [ ! -z "${which}" ]; then
+      echo "You have installed: ${which}"
+      if [ -z "${replace}" ]; then
+        read -p "Do you want to overwrite the installation ?(no)": replace
+      fi
+      if [ -z "${replace}" ]; then
+        replace="no"
+      fi
+      replace=$(echo "${replace}" | tr [A-Z] [a-z])
+      if [[ "${replace}" =~ ^y|yes$ ]]; then
+        echo "Overwrite installation..."
+        rm -rf "${which}"
+      else
+        echo "Do not overwrite installation and exit."
+        exit 0
+      fi
+    fi
   fi
-  rm -rf "${install_path}/${file_name}" && mkdir -p "${install_path}"
-  tar -zxvf "${base_file_name}" -C "${install_path}"
+  base_filename=$(basename "${input}")
+  rm -rf "${output}" && mkdir -p "${output}"
+  if [[ "${input}" =~ ^http.* ]]; then
+    curl -o "${base_filename}" "${input}"
+    tar -zxvf "${base_filename}"
+  else
+    tar -zxvf "${input}"
+  fi
+  mv "${extract}/"* "${output}"
+  rm -rf "${extract}"
   rm -rf /usr/local/bin/mvn
-  ln -fs "${install_path}/${file_name}/bin/mvn" /usr/local/bin/mvn
+  ln -fs "${output}/bin/mvn" /usr/local/bin/mvn
   sed -i "/^# Made for Maven/d" /etc/profile
   sed -i "/MAVEN_HOME/d" /etc/profile
   echo "# Made for Maven env by godcheese [godcheese@outlook.com] on $(date +%F)" >>/etc/profile
-  echo "export MAVEN_HOME=\"${install_path}/${file_name}\"" >>/etc/profile
+  echo "export MAVEN_HOME=\"${output}\"" >>/etc/profile
   echo "export PATH=\"\${MAVEN_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -3 /etc/profile)
@@ -68,7 +98,7 @@ function install_maven() {
     exit 0
   else
     show_banner
-    echo_info "\nMaven 安装成功！\n- Maven 版本：${version}\n- Maven 安装路径：${install_path}/${file_name}"
+    echo_info "\nMaven 安装成功！\n- Maven 版本：${version}\n- Maven 安装路径：${output}"
     exit 0
   fi
 }
@@ -86,13 +116,51 @@ function show_banner() {
 show_banner
 case "$1" in
 "install")
-  install_maven "$2" "$3" "$4"
+  shift 1
+  usage="Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y"
+  while getopts "hi:e:o:r:" arg; do
+    case $arg in
+    i)
+      input="$OPTARG"
+      ;;
+    e)
+      extract="$OPTARG"
+      ;;
+    o)
+      output="$OPTARG"
+      ;;
+    r)
+      replace="$OPTARG"
+      ;;
+    h)
+      echo "${usage}"
+      exit 0
+      ;;
+    ?)
+      echo "${usage}"
+      exit 1
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  if [ -z "${input}" ] || [ -z "${extract}" ] || [ -z "${output}" ]; then
+    echo_error "\nInvalid argument."
+    echo "${usage}"
+    exit 1
+  fi
+  install_maven "${input}" "${extract}" "${output}" "${replace}"
   ;;
 "uninstall")
-  uninstall_maven "$2" "$3" "$4"
+  shift 1
+  echo "Not yet developed."
   ;;
 *)
-  echo_error "\n请输入正确的命令"
-  exit 0
+  echo_error "\n请输入正确的命令：\n install/uninstall"
+  exit 1
   ;;
 esac

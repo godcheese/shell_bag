@@ -49,6 +49,32 @@ function install_mysql() {
   mysql_log_error_file=
 
   echo_info "\nInstalling MySQL..."
+  input="$1"
+  extract="$2"
+  output="$3"
+  replace="$4"
+  which=$(which mysql 2>&1)
+  echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
+  if [ "$?" == 1 ]; then
+    if [ ! -z "${which}" ]; then
+      echo "You have installed: ${which}"
+      if [ -z "${replace}" ]; then
+        read -p "Do you want to overwrite the installation ?(no)": replace
+      fi
+      if [ -z "${replace}" ]; then
+        replace="no"
+      fi
+      replace=$(echo "${replace}" | tr [A-Z] [a-z])
+      if [[ "${replace}" =~ ^y|yes$ ]]; then
+        echo "Overwrite installation..."
+        rm -rf "${which}"
+      else
+        echo "Do not overwrite installation and exit."
+        exit 0
+      fi
+    fi
+  fi
+
   if [ "${release_id}"x == "ubuntu"x ]; then
     apt-get update -y
     apt-get install -y libaio-dev
@@ -59,27 +85,28 @@ function install_mysql() {
     rm -rf /var/lock/subsys/mysql
   fi
   kill_process mysql
-  install_path="$1"
-  download_url="$2"
-  file_name="$3"
-  base_file_name=$(basename "${download_url}")
-  if [[ "${download_url}" =~ ^http.* ]]; then
-    curl -o "${base_file_name}" "${download_url}"
+  base_filename=$(basename "${input}")
+  rm -rf "${output}" && mkdir -p "${output}"
+  if [[ "${input}" =~ ^http.* ]]; then
+    curl -o "${base_filename}" "${input}"
+    tar -zxvf "${base_filename}"
+  else
+    tar -zxvf "${input}"
   fi
-  rm -rf "${install_path}/${file_name}" && mkdir -p "${install_path}"
-  tar -zxvf "${base_file_name}" -C "${install_path}"
+  mv "${extract}/"* "${output}"
+  rm -rf "${extract}"
 
   if test -z "${mysql_data}"; then
-    mysql_data="${install_path}/${file_name}/data"
+    mysql_data="${output}/data"
   fi
   if test -z "${mysql_log_error_file}"; then
-    mysql_log_error_file="${install_path}/${file_name}/log/mysql-error.log"
+    mysql_log_error_file="${output}/log/mysql-error.log"
   fi
   if test -z "${mysql_sock_file}"; then
-    mysql_sock_file="${install_path}/${file_name}/mysql.sock"
+    mysql_sock_file="${output}/mysql.sock"
   fi
   if test -z "${mysql_pid_file}"; then
-    mysql_pid_file="${install_path}/${file_name}/mysql.pid"
+    mysql_pid_file="${output}/mysql.pid"
   fi
   if [ ! -d "${mysql_data}" ]; then
     mkdir -p "${mysql_data}"
@@ -98,16 +125,16 @@ function install_mysql() {
   fi
 
   rm -rf /etc/init.d/mysql
-  \cp -rf "${install_path}/${file_name}/support-files/mysql.server" /etc/init.d/mysql
+  \cp -rf "${output}/support-files/mysql.server" /etc/init.d/mysql
   rm -rf /usr/local/bin/mysql
   rm -rf /usr/local/bin/mysqldump
   rm -rf /usr/local/bin/myisamchk
   rm -rf /usr/local/bin/mysqld_safe
-  ln -fs "${install_path}/${file_name}/bin/mysql" /usr/local/bin/mysql
-  ln -fs "${install_path}/${file_name}/bin/mysqldump" /usr/local/bin/mysqldump
-  ln -fs "${install_path}/${file_name}/bin/myisamchk" /usr/local/bin/myisamchk
-  ln -fs "${install_path}/${file_name}/bin/mysqld_safe" /usr/local/bin/mysqld_safe
-  ln -fs "${install_path}/${file_name}/bin/mysqladmin" /usr/local/bin/mysqladmin
+  ln -fs "${output}/bin/mysql" /usr/local/bin/mysql
+  ln -fs "${output}/bin/mysqldump" /usr/local/bin/mysqldump
+  ln -fs "${output}/bin/myisamchk" /usr/local/bin/myisamchk
+  ln -fs "${output}/bin/mysqld_safe" /usr/local/bin/mysqld_safe
+  ln -fs "${output}/bin/mysqladmin" /usr/local/bin/mysqladmin
 
   rm -rf /etc/my.cnf.d && mkdir -p /etc/my.cnf.d
   rm -rf /etc/my.cnf && touch /etc/my.cnf
@@ -115,7 +142,7 @@ function install_mysql() {
 [client]
 socket=${mysql_sock_file}
 [mysqld]
-basedir=${install_path}/${file_name}
+basedir=${output}
 datadir=${mysql_data}
 socket=${mysql_sock_file}
 pid-file=${mysql_pid_file}
@@ -130,18 +157,18 @@ EOF
   sed -i "/^# Made for MySQL/d" /etc/profile
   sed -i "/MYSQL_HOME/d" /etc/profile
   echo "# Made for MySQL env by godcheese [godcheese@outlook.com] on $(date +%F)" >>/etc/profile
-  echo "export MYSQL_HOME=\"${install_path}/${file_name}\"" >>/etc/profile
+  echo "export MYSQL_HOME=\"${output}\"" >>/etc/profile
   echo "export PATH=\"\${MYSQL_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -3 /etc/profile)
   echo_warn "\n写入 /etc/profile 的环境变量内容：\n${profile}"
   groupadd -f mysql && useradd -r -g mysql mysql -s /bin/false
-  chown -R mysql:mysql "${install_path}/${file_name}"
-  "${install_path}/${file_name}/bin/mysqld" --initialize-insecure --user=mysql
+  chown -R mysql:mysql "${output}"
+  "${output}/bin/mysqld" --initialize-insecure --user=mysql
   chkconfig --add mysql && chkconfig mysql on
   service mysql start
-  "${install_path}/${file_name}/bin/mysqladmin" -u root password "${mysql_password}"
-  "${install_path}/${file_name}/bin/mysql" -uroot -p123456 -e "use mysql;update user set host ='%' where user ='root';"
+  "${output}/bin/mysqladmin" -u root password "${mysql_password}"
+  "${output}/bin/mysql" -uroot -p123456 -e "use mysql;update user set host ='%' where user ='root';"
   service mysql restart
   version=$(mysql --version 2>&1)
   if [ "$?" != 0 ]; then
@@ -154,7 +181,7 @@ EOF
     show_banner
     echo_info "\nMySQL 安装成功！
 - MySQL 版本：${version}
-- MySQL 安装路径：${install_path}/${file_name}
+- MySQL 安装路径：${output}
 - MySQL 数据保存路径：${mysql_data}
 - MySQL 日志文件路径：${mysql_log_error_file%/*}
 - MySQL 端口：${mysql_port}
@@ -166,16 +193,6 @@ EOF
   重启：service mysql restart"
     exit 0
   fi
-}
-
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
 }
 
 # kill_process
@@ -193,16 +210,64 @@ function kill_process() {
   done
 }
 
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+
 show_banner
 case "$1" in
 "install")
-  install_mysql "$2" "$3" "$4"
+  shift 1
+  usage="Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y"
+  while getopts "hi:e:o:r:" arg; do
+    case $arg in
+    i)
+      input="$OPTARG"
+      ;;
+    e)
+      extract="$OPTARG"
+      ;;
+    o)
+      output="$OPTARG"
+      ;;
+    r)
+      replace="$OPTARG"
+      ;;
+    h)
+      echo "${usage}"
+      exit 0
+      ;;
+    ?)
+      echo "${usage}"
+      exit 1
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  if [ -z "${input}" ] || [ -z "${extract}" ] || [ -z "${output}" ]; then
+    echo_error "\nInvalid argument."
+    echo "${usage}"
+    exit 1
+  fi
+  install_mysql "${input}" "${extract}" "${output}" "${replace}"
   ;;
 "uninstall")
-  uninstall_mysql "$2" "$3" "$4"
+  shift 1
+  echo "Not yet developed."
   ;;
 *)
-  echo_error "\n请输入正确的命令"
+  echo_error "\n请输入正确的命令：\n install/uninstall"
   exit 1
   ;;
 esac

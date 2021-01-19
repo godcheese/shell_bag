@@ -42,26 +42,52 @@ check_system
 # install_jdk
 function install_jdk() {
   echo_info "\nInstalling JDK..."
-  install_path="$1"
-  download_url="$2"
-  file_name="$3"
-  base_file_name=$(basename "${download_url}")
-  if [[ "${download_url}" =~ ^http.* ]]; then
-    curl -o "${base_file_name}" "${download_url}"
+  input="$1"
+  extract="$2"
+  output="$3"
+  replace="$4"
+  which=$(which java 2>&1)
+  echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
+  if [ "$?" == 1 ]; then
+    if [ ! -z "${which}" ]; then
+      echo "You have installed: ${which}"
+      if [ -z "${replace}" ]; then
+        read -p "Do you want to overwrite the installation ?(no)": replace
+      fi
+      if [ -z "${replace}" ]; then
+        replace="no"
+      fi
+      replace=$(echo "${replace}" | tr [A-Z] [a-z])
+      if [[ "${replace}" =~ ^y|yes$ ]]; then
+        echo "Overwrite installation..."
+        rm -rf "${which}"
+      else
+        echo "Do not overwrite installation and exit."
+        exit 0
+      fi
+    fi
   fi
-  rm -rf "${install_path}/${file_name}" && mkdir -p "${install_path}"
-  tar -zxvf "${base_file_name}" -C "${install_path}"
+  base_filename=$(basename "${input}")
+  rm -rf "${output}" && mkdir -p "${output}"
+  if [[ "${input}" =~ ^http.* ]]; then
+    curl -o "${base_filename}" "${input}"
+    tar -zxvf "${base_filename}"
+  else
+    tar -zxvf "${input}"
+  fi
+  mv "${extract}/"* "${output}"
+  rm -rf "${extract}"
   rm -rf /usr/local/bin/java
   rm -rf /usr/local/bin/javac
   rm -rf /usr/local/bin/jar
-  ln -fs "${install_path}/${file_name}/bin/java" /usr/local/bin/java
-  ln -fs "${install_path}/${file_name}/bin/javac" /usr/local/bin/javac
-  ln -fs "${install_path}/${file_name}/bin/jar" /usr/local/bin/jar
+  ln -fs "${output}/bin/java" /usr/local/bin/java
+  ln -fs "${output}/bin/javac" /usr/local/bin/javac
+  ln -fs "${output}/bin/jar" /usr/local/bin/jar
   sed -i "/^# Made for JDK/d" /etc/profile
   sed -i "/JAVA_HOME/d" /etc/profile
   sed -i "/CLASSPATH/d" /etc/profile
   echo "# Made for JDK env by godcheese [godcheese@outlook.com] on $(date +%F)" >>/etc/profile
-  echo "export JAVA_HOME=\"${install_path}/${file_name}\"" >>/etc/profile
+  echo "export JAVA_HOME=\"${output}\"" >>/etc/profile
   echo "export CLASSPATH=\".:\${JAVA_HOME}jre/lib/rt.jar:\${JAVA_HOME}/lib/dt.jar:\${JAVA_HOME}/lib/tools.jar\"" >>/etc/profile
   echo "export PATH=\"\${JAVA_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
@@ -74,7 +100,7 @@ function install_jdk() {
     exit 1
   else
     show_banner
-    echo_info "\nJDK 安装成功！\n- JDK 版本： ${version}\n- JDK 安装路径：${install_path}/${file_name}"
+    echo_info "\nJDK 安装成功！\n- JDK 版本： ${version}\n- JDK 安装路径：${output}"
     exit 0
   fi
 }
@@ -92,13 +118,51 @@ function show_banner() {
 show_banner
 case "$1" in
 "install")
-  install_jdk "$2" "$3" "$4"
+  shift 1
+  usage="Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y"
+  while getopts "hi:e:o:r:" arg; do
+    case $arg in
+    i)
+      input="$OPTARG"
+      ;;
+    e)
+      extract="$OPTARG"
+      ;;
+    o)
+      output="$OPTARG"
+      ;;
+    r)
+      replace="$OPTARG"
+      ;;
+    h)
+      echo "${usage}"
+      exit 0
+      ;;
+    ?)
+      echo "${usage}"
+      exit 1
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  if [ -z "${input}" ] || [ -z "${extract}" ] || [ -z "${output}" ]; then
+    echo_error "\nInvalid argument."
+    echo "${usage}"
+    exit 1
+  fi
+  install_jdk "${input}" "${extract}" "${output}" "${replace}"
   ;;
 "uninstall")
-  uninstall_jdk "$2" "$3" "$4"
+  shift 1
+  echo "Not yet developed."
   ;;
 *)
-  echo_error "\n请输入正确的命令"
+  echo_error "\n请输入正确的命令：\n install/uninstall"
   exit 1
   ;;
 esac

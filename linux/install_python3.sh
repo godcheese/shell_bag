@@ -42,6 +42,31 @@ check_system
 # install_python3
 function install_python3() {
   echo_info "\nInstalling Python 3.x..."
+  input="$1"
+  extract="$2"
+  output="$3"
+  replace="$4"
+  which=$(which nginx 2>&1)
+  echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
+    if [ "$?" == 1 ]; then
+    if [ ! -z "${which}" ]; then
+      echo "You have installed: ${which}"
+      if [ -z "${replace}" ]; then
+        read -p "Do you want to overwrite the installation ?(no)": replace
+      fi
+      if [ -z "${replace}" ]; then
+        replace="no"
+      fi
+      replace=$(echo "${replace}" | tr [A-Z] [a-z])
+      if [[ "${replace}" =~ ^y|yes$ ]]; then
+        echo "Overwrite installation..."
+        rm -rf "${which}"
+      else
+        echo "Do not overwrite installation and exit."
+        exit 0
+      fi
+    fi
+  fi
   if [ "${release_id}"x == "centos"x ]; then
     yum update -y
     yum install -y gcc zlib*
@@ -51,27 +76,29 @@ function install_python3() {
     apt-get install -y gcc
   fi
   current_path=$(pwd)
-  install_path="$1"
-  download_url="$2"
-  file_name="$3"
-  base_file_name=$(basename "${download_url}")
-  if [[ "${download_url}" =~ ^http.* ]]; then
-    curl -o "${base_file_name}" "${download_url}"
+  base_filename=$(basename "${input}")
+  rm -rf "${output}" && mkdir -p "${output}"
+  if [[ "${input}" =~ ^http.* ]]; then
+    curl -o "${base_filename}" "${input}"
+    tar -zxvf "${base_filename}"
+  else
+    tar -zxvf "${input}"
   fi
-  rm -rf "${install_path}/${file_name}" && mkdir -p "${install_path}"
-  tar -zxvf "${base_file_name}" -C "${install_path}"
-  cd "${install_path}/${file_name}"
-  ./configure --prefix="${install_path}/${file_name}" --with-ssl
+  mv "${extract}/"* "${output}"
+  rm -rf "${extract}"
+
+  cd "${output}"
+  ./configure --prefix="${output}" --with-ssl
   make && make install
   cd "${current_path}"
   rm -rf /usr/local/bin/pip3
   rm -rf /usr/local/bin/python3
-  ln -fs "${install_path}/${file_name}/bin/python3" /usr/local/bin/python3
-  ln -fs "${install_path}/${file_name}/bin/pip3" /usr/local/bin/pip3
+  ln -fs "${output}/bin/python3" /usr/local/bin/python3
+  ln -fs "${output}/bin/pip3" /usr/local/bin/pip3
   sed -i "/^# Made for Python/d" /etc/profile
   sed -i "/PYTHON_HOME/d" /etc/profile
   echo "# Made for Python env by godcheese [godcheese@outlook.com] on $(date +%F)" >>/etc/profile
-  echo "export PYTHON_HOME=\"${install_path}/${file_name}\"" >>/etc/profile
+  echo "export PYTHON_HOME=\"${output}\"" >>/etc/profile
   echo "export PATH=\"\${PYTHON_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -3 /etc/profile)
@@ -87,7 +114,7 @@ function install_python3() {
     echo_info "\nPython 安装成功！
 - Python 版本：${version1}
 - Pip 版本：${version2}
-- Python 安装路径：${install_path}/${file_name}"
+- Python 安装路径：${output}"
     exit 0
   fi
 }
@@ -105,13 +132,51 @@ function show_banner() {
 show_banner
 case "$1" in
 "install")
-  install_python3 "$2" "$3" "$4"
+  shift 1
+  usage="Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y"
+  while getopts "hi:e:o:r:" arg; do
+    case $arg in
+    i)
+      input="$OPTARG"
+      ;;
+    e)
+      extract="$OPTARG"
+      ;;
+    o)
+      output="$OPTARG"
+      ;;
+    r)
+      replace="$OPTARG"
+      ;;
+    h)
+      echo "${usage}"
+      exit 0
+      ;;
+    ?)
+      echo "${usage}"
+      exit 1
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  if [ -z "${input}" ] || [ -z "${extract}" ] || [ -z "${output}" ]; then
+    echo_error "\nInvalid argument."
+    echo "${usage}"
+    exit 1
+  fi
+  install_python3 "${input}" "${extract}" "${output}" "${replace}"
   ;;
 "uninstall")
-  uninstall_python3 "$2" "$3" "$4"
+  shift 1
+  echo "Not yet developed."
   ;;
 *)
-  echo_error "\n请输入正确的命令"
+  echo_error "\n请输入正确的命令：\n install/uninstall"
   exit 1
   ;;
 esac

@@ -49,6 +49,32 @@ function install_redis() {
   redis_log_file=
 
   echo_info "\nInstalling Redis..."
+  input="$1"
+  extract="$2"
+  output="$3"
+  replace="$4"
+  which=$(which mysql 2>&1)
+  echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
+  if [ "$?" == 1 ]; then
+    if [ ! -z "${which}" ]; then
+      echo "You have installed: ${which}"
+      if [ -z "${replace}" ]; then
+        read -p "Do you want to overwrite the installation ?(no)": replace
+      fi
+      if [ -z "${replace}" ]; then
+        replace="no"
+      fi
+      replace=$(echo "${replace}" | tr [A-Z] [a-z])
+      if [[ "${replace}" =~ ^y|yes$ ]]; then
+        echo "Overwrite installation..."
+        rm -rf "${which}"
+      else
+        echo "Do not overwrite installation and exit."
+        exit 0
+      fi
+    fi
+  fi
+
   if [ "${release_id}"x == "centos"x ]; then
     yum update -y
     yum install -y gcc
@@ -72,33 +98,35 @@ function install_redis() {
   kill_process redis
   kill_process redis-server
   current_path=$(pwd)
-  install_path="$1"
-  download_url="$2"
-  file_name="$3"
-  base_file_name=$(basename "${download_url}")
-  if [[ "${download_url}" =~ ^http.* ]]; then
-    curl -o "${base_file_name}" "${download_url}"
+  base_filename=$(basename "${input}")
+  rm -rf "${output}" && mkdir -p "${output}"
+  if [[ "${input}" =~ ^http.* ]]; then
+    curl -o "${base_filename}" "${input}"
+    tar -zxvf "${base_filename}"
+  else
+    tar -zxvf "${input}"
   fi
-  rm -rf "${install_path}/${file_name}" && mkdir -p "${install_path}"
-  tar -zxvf "${base_file_name}" -C "${install_path}"
+  mv "${extract}/"* "${output}"
+  rm -rf "${extract}"
+
   if test -z "${redis_data}"; then
-    redis_data="${install_path}/${file_name}/data"
+    redis_data="${output}/data"
   fi
   if test -z "${redis_conf_file}"; then
-    redis_conf_file="${install_path}/${file_name}/redis.conf"
+    redis_conf_file="${output}/redis.conf"
   fi
   if test -z "${redis_pid_file}"; then
-    redis_pid_file="${install_path}/${file_name}/redis.pid"
+    redis_pid_file="${output}/redis.pid"
   fi
   if test -z "${redis_log_file}"; then
-    redis_log_file="${install_path}/${file_name}/redis.log"
+    redis_log_file="${output}/redis.log"
   fi
   if [ ! -d "${redis_data}" ]; then
     mkdir -p "${redis_data}"
   fi
   if [ ! -r "${redis_conf_file}" ]; then
     mkdir -p "${redis_conf_file%/*}"
-    \cp -rf "${install_path}/${file_name}/redis.conf" "${redis_conf_file}"
+    \cp -rf "${output}/redis.conf" "${redis_conf_file}"
   fi
   if [ ! -r "${redis_pid_file}" ]; then
     mkdir -p "${redis_pid_file%/*}"
@@ -109,15 +137,15 @@ function install_redis() {
     touch "${redis_log_file}"
   fi
 
-  cd "${install_path}/${file_name}"
-  make && make install PREFIX="${install_path}/${file_name}"
+  cd "${output}"
+  make && make install PREFIX="${output}"
   cd "${current_path}"
   rm -rf /usr/local/bin/redis-server
   rm -rf /usr/local/bin/redis-cli
-  ln -fs "${install_path}/${file_name}/bin/redis-server" /usr/local/bin/redis-server
-  ln -fs "${install_path}/${file_name}/bin/redis-cli" /usr/local/bin/redis-cli
-  rm -rf "${install_path}/${file_name}/bin/redis.service" && touch "${install_path}/${file_name}/bin/redis.service"
-  cat >"${install_path}/${file_name}/bin/redis.service" <<EOF
+  ln -fs "${output}/bin/redis-server" /usr/local/bin/redis-server
+  ln -fs "${output}/bin/redis-cli" /usr/local/bin/redis-cli
+  rm -rf "${output}/bin/redis.service" && touch "${output}/bin/redis.service"
+  cat >"${output}/bin/redis.service" <<EOF
 #!/bin/sh
 # chkconfig: - 84 16
 # description: It is used to serve.
@@ -137,7 +165,7 @@ function kill_process() {
   done
 }
 
-exec_file="${install_path}/${file_name}/bin/redis-server"
+exec_file="${output}/bin/redis-server"
 conf_file="${redis_conf_file}"
 log_file="${redis_log_file}"
 if [ ! -r "\${exec_file}" ]; then
@@ -201,7 +229,7 @@ esac
 EOF
 
   rm -rf /etc/init.d/redis
-  \cp -rf "${install_path}/${file_name}/bin/redis.service" /etc/init.d/redis
+  \cp -rf "${output}/bin/redis.service" /etc/init.d/redis
   chmod 755 /etc/init.d/redis
   sed -i 's@^protected-mode yes@protected-mode no@' "${redis_conf_file}"
   sed -i 's@^bind 127.0.0.1@# bind 127.0.0.1@' "${redis_conf_file}"
@@ -217,7 +245,7 @@ EOF
   sed -i "/^# Made for Redis/d" /etc/profile
   sed -i "/REDIS_HOME/d" /etc/profile
   echo "# Made for Redis env by godcheese [godcheese@outlook.com] on $(date +%F)" >>/etc/profile
-  echo "export REDIS_HOME=\"${install_path}/${file_name}\"" >>/etc/profile
+  echo "export REDIS_HOME=\"${output}\"" >>/etc/profile
   echo "export PATH=\"\${REDIS_HOME}:\${REDIS_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -3 /etc/profile)
@@ -233,7 +261,7 @@ EOF
     show_banner
     echo_info "\nRedis 安装成功！已关闭 protected mode。
 - Redis 版本：${version}
-- Redis 安装路径：${install_path}/${file_name}/bin
+- Redis 安装路径：${output}/bin
 - Redis 配置文件路径：${redis_conf_file}
 - Redis 端口：${redis_port}
 - Redis 密码：${redis_password}
@@ -244,16 +272,6 @@ EOF
   重启：service redis restart"
     exit 0
   fi
-}
-
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
 }
 
 # kill_process
@@ -271,16 +289,64 @@ function kill_process() {
   done
 }
 
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+
 show_banner
 case "$1" in
 "install")
-  install_redis "$2" "$3" "$4"
+  shift 1
+  usage="Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y"
+  while getopts "hi:e:o:r:" arg; do
+    case $arg in
+    i)
+      input="$OPTARG"
+      ;;
+    e)
+      extract="$OPTARG"
+      ;;
+    o)
+      output="$OPTARG"
+      ;;
+    r)
+      replace="$OPTARG"
+      ;;
+    h)
+      echo "${usage}"
+      exit 0
+      ;;
+    ?)
+      echo "${usage}"
+      exit 1
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  if [ -z "${input}" ] || [ -z "${extract}" ] || [ -z "${output}" ]; then
+    echo_error "\nInvalid argument."
+    echo "${usage}"
+    exit 1
+  fi
+  install_redis "${input}" "${extract}" "${output}" "${replace}"
   ;;
 "uninstall")
-  uninstall_redis "$2" "$3" "$4"
+  shift 1
+  echo "Not yet developed."
   ;;
 *)
-  echo_error "\n请输入正确的命令"
-  exit 0
+  echo_error "\n请输入正确的命令：\n install/uninstall"
+  exit 1
   ;;
 esac
