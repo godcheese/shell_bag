@@ -1,4 +1,19 @@
 ### Linux Usage Example：
+```
+Usage:
+-h show usage.
+-i test.tar.gz/https.example.com/test.tar.gz
+-e subDirectory
+-o /test
+-r yes/y
+```
+```
+-h help
+-i input file
+-e extract name
+-o output directory
+-r replace install
+```
 
 ### JDK
 
