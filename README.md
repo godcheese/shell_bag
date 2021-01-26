@@ -9,9 +9,8 @@
 
 - [ ] windows
     > [Windows XP](https://github.com/godcheese/shell_bag/tree/master/windows)
+  
 
+- [x] 基本完善
 
-
- [x] 基本完善
-
- [ ] 未完善
+- [ ] 未完善
