@@ -127,6 +127,7 @@ function install_nginx() {
   cd "${output}"
   ./configure --prefix="${output}/bin" --sbin-path=nginx --conf-path="${nginx_conf_file}" --pid-path="${nginx_pid_file}"
   make && make install
+  sed -i 's@^#user  nobody;@user  root;@' "${nginx_conf_file}"
   cd "${current_path}"
   rm -rf /usr/local/bin/nginx
   ln -fs "${output}/bin/nginx" /usr/local/bin/nginx
@@ -251,7 +252,6 @@ function kill_process() {
     kill -9 "$i"
   done
 }
-
 
 # show_banner
 function show_banner() {
