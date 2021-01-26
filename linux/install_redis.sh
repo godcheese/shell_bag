@@ -146,7 +146,8 @@ function install_redis() {
   ln -fs "${output}/bin/redis-cli" /usr/local/bin/redis-cli
   rm -rf "${output}/bin/redis.service" && touch "${output}/bin/redis.service"
   cat >"${output}/bin/redis.service" <<EOF
-#!/bin/sh
+#!/usr/bin/env bash
+# encoding: utf-8
 # chkconfig: - 84 16
 # description: It is used to serve.
 # author: godcheese [godcheese@outlook.com]

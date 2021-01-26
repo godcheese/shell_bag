@@ -132,7 +132,8 @@ function install_nginx() {
   ln -fs "${output}/bin/nginx" /usr/local/bin/nginx
   rm -rf "${output}/bin/nginx.service" && touch "${output}/bin/nginx.service"
   cat >"${output}/bin/nginx.service" <<EOF
-#!/bin/sh
+#!/usr/bin/env bash
+# encoding: utf-8
 # chkconfig: - 85 15
 # description: It is used to serve.
 # author: godcheese [godcheese@outlook.com]
