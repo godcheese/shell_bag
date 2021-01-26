@@ -98,9 +98,10 @@ function install_nginx() {
   else
     tar -zxvf "${input}"
   fi
-  mv "${extract}/"* "${output}"
-  rm -rf "${extract}"
-
+  if [ "$(pwd)/${extract}" != "${output}" ]; then
+    mv "${extract}/"* "${output}"
+    rm -rf "${extract}"
+  fi
   if test -z "${nginx_conf_file}"; then
     nginx_conf_file="${output}/bin/conf/nginx.conf"
   fi
@@ -262,7 +263,6 @@ function show_banner() {
  | author: godcheese [godcheese@outlook.com]     |
  -------------------------------------------------"
 }
-
 
 show_banner
 case "$1" in

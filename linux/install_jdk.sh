@@ -75,8 +75,10 @@ function install_jdk() {
   else
     tar -zxvf "${input}"
   fi
-  mv "${extract}/"* "${output}"
-  rm -rf "${extract}"
+  if [ "$(pwd)/${extract}" != "${output}" ]; then
+    mv "${extract}/"* "${output}"
+    rm -rf "${extract}"
+  fi
   rm -rf /usr/local/bin/java
   rm -rf /usr/local/bin/javac
   rm -rf /usr/local/bin/jar

@@ -93,9 +93,10 @@ function install_mysql() {
   else
     tar -zxvf "${input}"
   fi
-  mv "${extract}/"* "${output}"
-  rm -rf "${extract}"
-
+  if [ "$(pwd)/${extract}" != "${output}" ]; then
+    mv "${extract}/"* "${output}"
+    rm -rf "${extract}"
+  fi
   if test -z "${mysql_data}"; then
     mysql_data="${output}/data"
   fi

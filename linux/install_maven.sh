@@ -79,8 +79,12 @@ function install_maven() {
   else
     tar -zxvf "${input}"
   fi
-  mv "${extract}/"* "${output}"
-  rm -rf "${extract}"
+  echo "$(pwd)/${extract}"
+  echo "${output}"
+  if [ "$(pwd)/${extract}" != "${output}" ]; then
+    mv "${extract}/"* "${output}"
+    rm -rf "${extract}"
+  fi
   rm -rf /usr/local/bin/mvn
   ln -fs "${output}/bin/mvn" /usr/local/bin/mvn
   sed -i "/^# Made for Maven/d" /etc/profile

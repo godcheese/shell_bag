@@ -48,7 +48,7 @@ function install_python3() {
   replace="$4"
   which=$(which nginx 2>&1)
   echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
-    if [ "$?" == 1 ]; then
+  if [ "$?" == 1 ]; then
     if [ ! -z "${which}" ]; then
       echo "You have installed: ${which}"
       if [ -z "${replace}" ]; then
@@ -84,9 +84,10 @@ function install_python3() {
   else
     tar -zxvf "${input}"
   fi
-  mv "${extract}/"* "${output}"
-  rm -rf "${extract}"
-
+  if [ "$(pwd)/${extract}" != "${output}" ]; then
+    mv "${extract}/"* "${output}"
+    rm -rf "${extract}"
+  fi
   cd "${output}"
   ./configure --prefix="${output}" --with-ssl
   make && make install

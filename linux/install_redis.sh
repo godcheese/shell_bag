@@ -106,9 +106,10 @@ function install_redis() {
   else
     tar -zxvf "${input}"
   fi
-  mv "${extract}/"* "${output}"
-  rm -rf "${extract}"
-
+  if [ "$(pwd)/${extract}" != "${output}" ]; then
+    mv "${extract}/"* "${output}"
+    rm -rf "${extract}"
+  fi
   if test -z "${redis_data}"; then
     redis_data="${output}/data"
   fi
