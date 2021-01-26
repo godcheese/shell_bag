@@ -1,7 +1,7 @@
 # shell_bag
 > Linux/Unix Shell、Windows Bat 工具包
 
-- [ x ] linux
+- [x] linux
     > [CentOS 7、Ubuntu、Debian](https://github.com/godcheese/shell_bag/tree/master/linux)
 
 - [ ] macos
@@ -12,6 +12,6 @@
 
 
 
-[ x ] 基本完善
+ [x] 基本完善
 
-[  ] 未完善
+ [ ] 未完善
