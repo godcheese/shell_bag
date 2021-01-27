@@ -281,7 +281,7 @@ EOF
     echo_error "/nThere is something wrong with Oracle startup.\n"
     exit 0
   fi
-#  su - oracle -c "dbstart ${oracle_home}"
+  #  su - oracle -c "dbstart ${oracle_home}"
   version=$(
     su - oracle -c "sqlplus -S '/ as sysdba' <<EOF
   set pagesize 0 feedback off verify off heading off echo off;

@@ -33,7 +33,7 @@ function check_system() {
     release_name="CentOS"
     release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
     ;;
-   "ubuntu")
+  "ubuntu")
     release_name="Ubuntu"
     release_full_version="${release_version}"
     release_version=$(echo "${release_version}" | awk -F '.' '{print $1}')
