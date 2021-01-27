@@ -1,4 +1,5 @@
 ## CentOS 7、Ubuntu、Debian
+> 测试环境：CentOS 7.x、Ubuntu 16.x
 
 > 完善程度
 

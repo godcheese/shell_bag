@@ -9,7 +9,7 @@
 > Linux/Unix Shell、Windows Bat 工具包
 
 - [x] linux
-    > [CentOS 7、Ubuntu、Debian](https://github.com/godcheese/shell_bag/tree/master/linux)
+    > [CentOS、Ubuntu](https://github.com/godcheese/shell_bag/tree/master/linux)
 
 - [ ] macos
     > [macOS 10.14](https://github.com/godcheese/shell_bag/tree/master/macos)
