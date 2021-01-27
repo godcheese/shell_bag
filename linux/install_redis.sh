@@ -5,9 +5,20 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install Redis
 
-echo_error() { echo -e "\n\033[031;1mERROR $(date +"%F %T")\t$*\033[0m"; }
-echo_warn() { echo -e "\n\033[033;1mWARN $(date +"%F %T")\t$*\033[0m"; }
-echo_info() { echo -e "\n\033[032;1mINFO $(date +"%F %T")\t$*\033[0m"; }
+echo_error() { echo -e "\033[031;1m$*\033[0m"; }
+echo_warn() { echo -e "\033[033;1m$*\033[0m"; }
+echo_info() { echo -e "\033[032;1m$*\033[0m"; }
+
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+show_banner
 
 # check_system
 release_id=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
@@ -22,17 +33,17 @@ function check_system() {
     release_name="CentOS"
     release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
     ;;
-  "debian")
-    release_name="Debian"
-    release_full_version=$(cat /etc/debian_version 2>&1)
-    ;;
   "ubuntu")
     release_name="Ubuntu"
     release_full_version="${release_version}"
     release_version=$(echo "${release_version}" | awk -F '.' '{print $1}')
     ;;
+  "debian")
+    release_name="Debian"
+    release_full_version=$(cat /etc/debian_version 2>&1)
+    ;;
   *)
-    echo_error "\nUnsupported system."
+    echo_error "\nUnsupported system.\n"
     exit 0
     ;;
   esac
@@ -57,7 +68,7 @@ function install_redis() {
   echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
   if [ "$?" == 1 ]; then
     if [ ! -z "${which}" ]; then
-      echo "You have installed: ${which}"
+      echo_warn "You have installed: ${which}"
       if [ -z "${replace}" ]; then
         read -p "Do you want to overwrite the installation ?(no)": replace
       fi
@@ -66,10 +77,10 @@ function install_redis() {
       fi
       replace=$(echo "${replace}" | tr [A-Z] [a-z])
       if [[ "${replace}" =~ ^y|yes$ ]]; then
-        echo "Overwrite installation..."
+        echo_warn "Overwrite installation..."
         rm -rf "${which}"
       else
-        echo "Do not overwrite installation and exit."
+        echo_warn "Do not overwrite installation and exit."
         exit 0
       fi
     fi
@@ -85,14 +96,13 @@ function install_redis() {
     source /etc/profile
   fi
   if test -r /etc/init.d/redis; then
-    chkconfig --del redis && chkconfig redis off
-    service redis stop >/dev/null
-  else
-    if test -r /usr/local/bin/redis-server; then
-      result=$(ps -ef | grep redis | grep -v grep)
-      if [[ "${result}" =~ "00:00:00 redis" ]]; then
-        service redis stop >/dev/null
-      fi
+    if [ "${release_id}"x == "centos"x ]; then
+      service redis stop >/dev/null
+      chkconfig --del redis && chkconfig redis off
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      /etc/init.d/redis stop >/dev/null
+      update-rc.d -f redis remove
     fi
   fi
   kill_process redis
@@ -137,7 +147,6 @@ function install_redis() {
     mkdir -p "${redis_log_file%/*}"
     touch "${redis_log_file}"
   fi
-
   cd "${output}"
   make && make install PREFIX="${output}"
   cd "${current_path}"
@@ -152,6 +161,16 @@ function install_redis() {
 # chkconfig: - 84 16
 # description: It is used to serve.
 # author: godcheese [godcheese@outlook.com]
+### BEGIN INIT INFO
+# Provides: redis
+# Required-Start: $local_fs $remote_fs
+# Should-Start:
+# Required-Stop: $local_fs $remote_fs
+# Default-Start:  2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop Redis
+# Description: Redis
+### END INIT INFO
 
 # kill_process
 function kill_process() {
@@ -240,8 +259,14 @@ EOF
   sed -i 's@pidfile /var/run/redis_6379.pid@pidfile '"${redis_pid_file}"'@' "${redis_conf_file}"
   sed -i 's@logfile ""@logfile '"${redis_log_file}"'@' "${redis_conf_file}"
   sed -i 's@dir ./@dir '"${redis_data}"'@' "${redis_conf_file}"
-  chkconfig --add redis && chkconfig redis on
-  service redis start
+  if [ "${release_id}"x == "centos"x ]; then
+    service redis start
+    chkconfig --add redis && chkconfig redis on
+  fi
+  if [ "${release_id}"x == "ubuntu"x ]; then
+    /etc/init.d/redis start
+    update-rc.d -f redis defaults
+  fi
   sed -i "/^source \/opt\/rh\/devtoolset-9\/enable/d" /etc/profile
   source /etc/profile
   sed -i "/^# Made for Redis/d" /etc/profile
@@ -255,11 +280,16 @@ EOF
   version=$(redis-server --version 2>&1)
   if [ "$?" != 0 ]; then
     show_banner
-    echo_error "\nRedis 安装失败！"
+    echo_error "\nRedis 安装失败！\n"
     exit 1
   else
-    firewall-cmd --zone=public --add-port="${redis_port}"/tcp --permanent >/dev/null 2>&1
-    firewall-cmd --reload >/dev/null 2>&1
+    if [ "${release_id}"x == "centos"x ]; then
+      firewall-cmd --zone=public --add-port="${redis_port}"/tcp --permanent >/dev/null 2>&1
+      firewall-cmd --reload >/dev/null 2>&1
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      ufw allow "${redis_port}"/tcp >/dev/null 2>&1
+    fi
     show_banner
     echo_info "\nRedis 安装成功！已关闭 protected mode。
 - Redis 版本：${version}
@@ -267,11 +297,19 @@ EOF
 - Redis 配置文件路径：${redis_conf_file}
 - Redis 端口：${redis_port}
 - Redis 密码：${redis_password}
-- Redis 常用命令：
-  状态：service redis status
+- Redis 常用命令："
+    if [ "${release_id}"x == "centos"x ]; then
+      echo_info "  状态：service redis status
   启动：service redis start
   停止：service redis stop
-  重启：service redis restart"
+  重启：service redis restart\n"
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      echo_info "  状态：/etc/init.d/redis status
+  启动：/etc/init.d/redis start
+  停止：/etc/init.d/redis stop
+  重启：/etc/init.d/redis restart\n"
+    fi
     exit 0
   fi
 }
@@ -291,17 +329,6 @@ function kill_process() {
   done
 }
 
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
-}
-
-show_banner
 case "$1" in
 "install")
   shift 1

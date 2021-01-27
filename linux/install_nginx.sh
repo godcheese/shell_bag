@@ -5,9 +5,20 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install Nginx
 
-echo_error() { echo -e "\n\033[031;1mERROR $(date +"%F %T")\t$*\033[0m"; }
-echo_warn() { echo -e "\n\033[033;1mWARN $(date +"%F %T")\t$*\033[0m"; }
-echo_info() { echo -e "\n\033[032;1mINFO $(date +"%F %T")\t$*\033[0m"; }
+echo_error() { echo -e "\033[031;1m$*\033[0m"; }
+echo_warn() { echo -e "\033[033;1m$*\033[0m"; }
+echo_info() { echo -e "\033[032;1m$*\033[0m"; }
+
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+show_banner
 
 # check_system
 release_id=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
@@ -22,17 +33,17 @@ function check_system() {
     release_name="CentOS"
     release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
     ;;
-  "debian")
-    release_name="Debian"
-    release_full_version=$(cat /etc/debian_version 2>&1)
-    ;;
   "ubuntu")
     release_name="Ubuntu"
     release_full_version="${release_version}"
     release_version=$(echo "${release_version}" | awk -F '.' '{print $1}')
     ;;
+  "debian")
+    release_name="Debian"
+    release_full_version=$(cat /etc/debian_version 2>&1)
+    ;;
   *)
-    echo_error "\nUnsupported system."
+    echo_error "\nUnsupported system.\n"
     exit 0
     ;;
   esac
@@ -43,7 +54,6 @@ check_system
 function install_nginx() {
   nginx_conf_file=
   nginx_pid_file=
-  nginx_log_error_file=
 
   echo_info "\nInstalling Nginx..."
   input="$1"
@@ -54,7 +64,7 @@ function install_nginx() {
   echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
   if [ "$?" == 1 ]; then
     if [ ! -z "${which}" ]; then
-      echo "You have installed: ${which}"
+      echo_warn "You have installed: ${which}"
       if [ -z "${replace}" ]; then
         read -p "Do you want to overwrite the installation ?(no)": replace
       fi
@@ -63,15 +73,14 @@ function install_nginx() {
       fi
       replace=$(echo "${replace}" | tr [A-Z] [a-z])
       if [[ "${replace}" =~ ^y|yes$ ]]; then
-        echo "Overwrite installation..."
+        echo_warn "Overwrite installation..."
         rm -rf "${which}"
       else
-        echo "Do not overwrite installation and exit."
+        echo_warn "Do not overwrite installation and exit."
         exit 0
       fi
     fi
   fi
-
   if [ "${release_id}"x == "centos"x ]; then
     yum update -y
     yum install -y gcc zlib* pcre-devel make
@@ -81,8 +90,14 @@ function install_nginx() {
     apt-get install -y gcc build-essential libpcre3 libpcre3-dev
   fi
   if test -r /etc/init.d/nginx; then
-    chkconfig --add nginx && chkconfig nginx off
-    service nginx stop >/dev/null
+    if [ "${release_id}"x == "centos"x ]; then
+      service nginx stop >/dev/null
+      chkconfig --del nginx && chkconfig nginx off
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      /etc/init.d/nginx stop >/dev/null
+      update-rc.d -f nginx remove
+    fi
   else
     if test -r /usr/local/bin/nginx; then
       /usr/local/bin/nginx -s stop >/dev/null
@@ -110,13 +125,10 @@ function install_nginx() {
   fi
   if [ ! -r "${nginx_conf_file}" ]; then
     mkdir -p "${nginx_conf_file%/*}"
-    #    touch "${nginx_conf_file}"
   fi
   if [ ! -r "${nginx_pid_file}" ]; then
     mkdir -p "${nginx_pid_file%/*}"
-    #    touch "${nginx_pid_file}"
   fi
-
   cd "${output}"
   if [ "${release_id}"x == "ubuntu"x ]; then
     curl -o zlib-1.2.11.tar.gz http://www.zlib.net/zlib-1.2.11.tar.gz
@@ -139,6 +151,16 @@ function install_nginx() {
 # chkconfig: - 85 15
 # description: It is used to serve.
 # author: godcheese [godcheese@outlook.com]
+### BEGIN INIT INFO
+# Provides: nginx
+# Required-Start: $local_fs $remote_fs
+# Should-Start:
+# Required-Stop: $local_fs $remote_fs
+# Default-Start:  2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop Nginx
+# Description: Nginx
+### END INIT INFO
 
 exec_file="${output}/bin/nginx"
 if [ ! -r "\${exec_file}" ]; then
@@ -209,32 +231,53 @@ EOF
   echo "export PATH=\"\${NGINX_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -3 /etc/profile)
-  echo_warn "\n写入 /etc/profile 的环境变量内容：\n${profile}"
-  chkconfig --add nginx && chkconfig nginx on
-  service nginx start
+  echo_warn "\n写入 /etc/profile 的环境变量内容：\n${profile}\n"
+  if [ "${release_id}"x == "centos"x ]; then
+    service nginx start
+    chkconfig --add nginx && chkconfig nginx on
+  fi
+  if [ "${release_id}"x == "ubuntu"x ]; then
+    /etc/init.d/nginx start
+    update-rc.d -f nginx defaults
+  fi
   version=$(nginx -v 2>&1)
   if [ "$?" != 0 ]; then
     show_banner
-    echo_error "\nNginx 安装失败！"
+    echo_error "\nNginx 安装失败！\n"
     exit 1
   else
-    firewall-cmd --zone=public --add-service=http --permanent >/dev/null 2>&1
-    firewall-cmd --zone=public --add-service=https --permanent >/dev/null 2>&1
-    firewall-cmd --zone=public --add-port=80/tcp --permanent >/dev/null 2>&1
-    firewall-cmd --zone=public --add-port=443/tcp --permanent >/dev/null 2>&1
-    firewall-cmd --reload >/dev/null 2>&1
+    if [ "${release_id}"x == "centos"x ]; then
+      firewall-cmd --zone=public --add-service=http --permanent >/dev/null 2>&1
+      firewall-cmd --zone=public --add-service=https --permanent >/dev/null 2>&1
+      firewall-cmd --zone=public --add-port=80/tcp --permanent >/dev/null 2>&1
+      firewall-cmd --zone=public --add-port=443/tcp --permanent >/dev/null 2>&1
+      firewall-cmd --reload >/dev/null 2>&1
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      ufw allow 80/tcp >/dev/null 2>&1
+      ufw allow 443/tcp >/dev/null 2>&1
+    fi
     show_banner
     echo_info "\nNginx 安装成功！
 - Nginx 版本：${version}
 - Nginx 安装路径：${output}/bin
 - Nginx 配置文件路径：${nginx_conf_file}
 - Nginx 日志文件路径：${output}/bin/logs
-- Nginx 常用命令：
-  状态：service nginx status
+- Nginx 常用命令："
+    if [ "${release_id}"x == "centos"x ]; then
+      echo_info "  状态：service nginx status
   启动：service nginx start
   停止：service nginx stop
   重启：service nginx restart
-  测试配置：service nginx test"
+  测试配置：service nginx test\n"
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      echo_info "  状态：service nginx status
+  启动：/etc/init.d/nginx start
+  停止：/etc/init.d/nginx stop
+  重启：/etc/init.d/nginx restart
+  测试配置：/etc/init.d/nginx test\n"
+    fi
     exit 0
   fi
 }
@@ -254,17 +297,6 @@ function kill_process() {
   done
 }
 
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
-}
-
-show_banner
 case "$1" in
 "install")
   shift 1

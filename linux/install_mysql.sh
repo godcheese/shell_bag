@@ -5,9 +5,20 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install MySQL
 
-echo_error() { echo -e "\n\033[031;1mERROR $(date +"%F %T")\t$*\033[0m"; }
-echo_warn() { echo -e "\n\033[033;1mWARN $(date +"%F %T")\t$*\033[0m"; }
-echo_info() { echo -e "\n\033[032;1mINFO $(date +"%F %T")\t$*\033[0m"; }
+echo_error() { echo -e "\033[031;1m$*\033[0m"; }
+echo_warn() { echo -e "\033[033;1m$*\033[0m"; }
+echo_info() { echo -e "\033[032;1m$*\033[0m"; }
+
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+show_banner
 
 # check_system
 release_id=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
@@ -22,17 +33,17 @@ function check_system() {
     release_name="CentOS"
     release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
     ;;
-  "debian")
-    release_name="Debian"
-    release_full_version=$(cat /etc/debian_version 2>&1)
-    ;;
   "ubuntu")
     release_name="Ubuntu"
     release_full_version="${release_version}"
     release_version=$(echo "${release_version}" | awk -F '.' '{print $1}')
     ;;
+  "debian")
+    release_name="Debian"
+    release_full_version=$(cat /etc/debian_version 2>&1)
+    ;;
   *)
-    echo_error "\nUnsupported system."
+    echo_error "\nUnsupported system.\n"
     exit 0
     ;;
   esac
@@ -57,7 +68,7 @@ function install_mysql() {
   echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
   if [ "$?" == 1 ]; then
     if [ ! -z "${which}" ]; then
-      echo "You have installed: ${which}"
+      echo_warn "You have installed: ${which}"
       if [ -z "${replace}" ]; then
         read -p "Do you want to overwrite the installation ?(no)": replace
       fi
@@ -66,22 +77,27 @@ function install_mysql() {
       fi
       replace=$(echo "${replace}" | tr [A-Z] [a-z])
       if [[ "${replace}" =~ ^y|yes$ ]]; then
-        echo "Overwrite installation..."
+        echo_warn "Overwrite installation..."
         rm -rf "${which}"
       else
-        echo "Do not overwrite installation and exit."
+        echo_warn "Do not overwrite installation and exit."
         exit 0
       fi
     fi
   fi
-
   if [ "${release_id}"x == "ubuntu"x ]; then
     apt-get update -y
     apt-get install -y libaio-dev
   fi
   if test -r /etc/init.d/mysql; then
-    chkconfig --del mysql && chkconfig mysql off
-    service mysql stop >/dev/null
+    if [ "${release_id}"x == "centos"x ]; then
+      service mysql stop >/dev/null
+      chkconfig --del mysql && chkconfig mysql off
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      /etc/init.d/mysql stop >/dev/null
+      update-rc.d -f mysql remove
+    fi
     rm -rf /var/lock/subsys/mysql
   fi
   kill_process mysql
@@ -162,23 +178,39 @@ EOF
   echo "export PATH=\"\${MYSQL_HOME}/bin:\${PATH}\"" >>/etc/profile
   source /etc/profile
   profile=$(tail -3 /etc/profile)
-  echo_warn "\n写入 /etc/profile 的环境变量内容：\n${profile}"
+  echo_warn "\n写入 /etc/profile 的环境变量内容：\n${profile}\n"
   groupadd -f mysql && useradd -r -g mysql mysql -s /bin/false
   chown -R mysql:mysql "${output}"
   "${output}/bin/mysqld" --initialize-insecure --user=mysql
-  chkconfig --add mysql && chkconfig mysql on
-  service mysql start
+  if [ "${release_id}"x == "centos"x ]; then
+    service mysql start
+  fi
+  if [ "${release_id}"x == "ubuntu"x ]; then
+    /etc/init.d/mysql start
+  fi
   "${output}/bin/mysqladmin" -u root password "${mysql_password}"
   "${output}/bin/mysql" -uroot -p123456 -e "use mysql;update user set host ='%' where user ='root';"
-  service mysql restart
+  if [ "${release_id}"x == "centos"x ]; then
+    service mysql restart
+    chkconfig --add mysql && chkconfig mysql on
+  fi
+  if [ "${release_id}"x == "ubuntu"x ]; then
+    /etc/init.d/mysql restart
+    update-rc.d -f mysql defaults
+  fi
   version=$(mysql --version 2>&1)
   if [ "$?" != 0 ]; then
     show_banner
-    echo_error "\nMySQL 安装失败！"
+    echo_error "\nMySQL 安装失败！\n"
     exit 0
   else
-    firewall-cmd --zone=public --add-port=${mysql_port}/tcp --permanent >/dev/null 2>&1
-    firewall-cmd --reload >/dev/null 2>&1
+    if [ "${release_id}"x == "centos"x ]; then
+      firewall-cmd --zone=public --add-port="${mysql_port}"/tcp --permanent >/dev/null 2>&1
+      firewall-cmd --reload >/dev/null 2>&1
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      ufw allow "${mysql_port}"/tcp
+    fi
     show_banner
     echo_info "\nMySQL 安装成功！
 - MySQL 版本：${version}
@@ -187,11 +219,19 @@ EOF
 - MySQL 日志文件路径：${mysql_log_error_file%/*}
 - MySQL 端口：${mysql_port}
 - root 密码：${mysql_password}
-- MySQL 常用命令：
-  状态：service mysql status
+- MySQL 常用命令："
+    if [ "${release_id}"x == "centos"x ]; then
+      echo_info "  状态：service mysql status
   启动：service mysql start
   停止：service mysql stop
-  重启：service mysql restart"
+  重启：service mysql restart\n"
+    fi
+    if [ "${release_id}"x == "ubuntu"x ]; then
+      echo_info "  状态：/etc/init.d/mysql status
+  启动：/etc/init.d/mysql start
+  停止：/etc/init.d/mysql stop
+  重启：/etc/init.d/mysql restart\n"
+    fi
     exit 0
   fi
 }
@@ -211,17 +251,6 @@ function kill_process() {
   done
 }
 
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
-}
-
-show_banner
 case "$1" in
 "install")
   shift 1

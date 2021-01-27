@@ -5,9 +5,20 @@
 # author: godcheese [godcheese@outlook.com]
 # description: Install JDK
 
-echo_error() { echo -e "\n\033[031;1mERROR $(date +"%F %T")\t$*\033[0m"; }
-echo_warn() { echo -e "\n\033[033;1mWARN $(date +"%F %T")\t$*\033[0m"; }
-echo_info() { echo -e "\n\033[032;1mINFO $(date +"%F %T")\t$*\033[0m"; }
+echo_error() { echo -e "\033[031;1m$*\033[0m"; }
+echo_warn() { echo -e "\033[033;1m$*\033[0m"; }
+echo_info() { echo -e "\033[032;1m$*\033[0m"; }
+
+# show_banner
+function show_banner() {
+  echo_info "
+ -------------------------------------------------
+ | Install for Linux                             |
+ | http://github.com/godcheese/shell_bag         |
+ | author: godcheese [godcheese@outlook.com]     |
+ -------------------------------------------------"
+}
+show_banner
 
 # check_system
 release_id=$(awk '/^NAME="/' /etc/os-release | awk -F '"' '{print $2}' | awk -F ' ' '{print $1}' | tr 'A-Z' 'a-z' 2>&1)
@@ -22,17 +33,17 @@ function check_system() {
     release_name="CentOS"
     release_full_version=$(awk '/\W/' /etc/centos-release | awk '{print $4}' 2>&1)
     ;;
-  "debian")
-    release_name="Debian"
-    release_full_version=$(cat /etc/debian_version 2>&1)
-    ;;
   "ubuntu")
     release_name="Ubuntu"
     release_full_version="${release_version}"
     release_version=$(echo "${release_version}" | awk -F '.' '{print $1}')
     ;;
+  "debian")
+    release_name="Debian"
+    release_full_version=$(cat /etc/debian_version 2>&1)
+    ;;
   *)
-    echo_error "\nUnsupported system."
+    echo_error "\nUnsupported system.\n"
     exit 0
     ;;
   esac
@@ -50,7 +61,7 @@ function install_jdk() {
   echo "${which}" | grep "/usr/bin/which: no" "${which}" &>/dev/null
   if [ "$?" == 1 ]; then
     if [ ! -z "${which}" ]; then
-      echo "You have installed: ${which}"
+      echo_warn "You have installed: ${which}"
       if [ -z "${replace}" ]; then
         read -p "Do you want to overwrite the installation ?(no)": replace
       fi
@@ -59,10 +70,10 @@ function install_jdk() {
       fi
       replace=$(echo "${replace}" | tr [A-Z] [a-z])
       if [[ "${replace}" =~ ^y|yes$ ]]; then
-        echo "Overwrite installation..."
+        echo_warn "Overwrite installation..."
         rm -rf "${which}"
       else
-        echo "Do not overwrite installation and exit."
+        echo_warn "Do not overwrite installation and exit."
         exit 0
       fi
     fi
@@ -98,26 +109,15 @@ function install_jdk() {
   version=$(java -version 2>&1)
   if [ "$?" != 0 ]; then
     show_banner
-    echo_error "\nJDK 安装失败！"
+    echo_error "\nJDK 安装失败！\n"
     exit 1
   else
     show_banner
-    echo_info "\nJDK 安装成功！\n- JDK 版本： ${version}\n- JDK 安装路径：${output}"
+    echo_info "\nJDK 安装成功！\n- JDK 版本： ${version}\n- JDK 安装路径：${output}\n"
     exit 0
   fi
 }
 
-# show_banner
-function show_banner() {
-  echo_info "
- -------------------------------------------------
- | Install for Linux                             |
- | http://github.com/godcheese/shell_bag         |
- | author: godcheese [godcheese@outlook.com]     |
- -------------------------------------------------"
-}
-
-show_banner
 case "$1" in
 "install")
   shift 1
