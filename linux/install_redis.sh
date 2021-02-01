@@ -38,10 +38,6 @@ function check_system() {
     release_full_version="${release_version}"
     release_version=$(echo "${release_version}" | awk -F '.' '{print $1}')
     ;;
-  "debian")
-    release_name="Debian"
-    release_full_version=$(cat /etc/debian_version 2>&1)
-    ;;
   *)
     echo_error "\nUnsupported system.\n"
     exit 0
